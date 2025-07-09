@@ -111,17 +111,25 @@ public class RegistrationService {
     }
     
     /**
-     * Get registration statistics
+     * Get email from JWT token
      */
-    public RegistrationStats getRegistrationStats() {
-        long totalCustomers = customerRepository.countTotalCustomers();
-        long verifiedCustomers = customerRepository.countVerifiedCustomers();
-        double verificationRate = totalCustomers > 0 ? 
-            (double) verifiedCustomers / totalCustomers * 100 : 0;
-            
-        return new RegistrationStats(totalCustomers, verifiedCustomers, verificationRate);
+    public String getEmailFromToken(String token) {
+        try {
+            return jwtUtil.getEmailFromToken(token);
+        } catch (Exception e) {
+            return null;
+        }
     }
     
+    /**
+     * Validate JWT token
+     */
+    public boolean validateToken(String token) {
+        return jwtUtil.validateToken(token);
+    }
+    
+
+
     // Inner class for stats response
     public static class RegistrationStats {
         private final long totalCustomers;
@@ -137,5 +145,17 @@ public class RegistrationService {
         public long getTotalCustomers() { return totalCustomers; }
         public long getVerifiedCustomers() { return verifiedCustomers; }
         public double getVerificationRate() { return verificationRate; }
+    }    
+    
+    /**
+     * Get registration statistics - ADD THIS METHOD
+     */
+    public RegistrationStats getRegistrationStats() {
+        long totalCustomers = customerRepository.countTotalCustomers();
+        long verifiedCustomers = customerRepository.countVerifiedCustomers();
+        double verificationRate = totalCustomers > 0 ? 
+            (double) verifiedCustomers / totalCustomers * 100 : 0;
+            
+        return new RegistrationStats(totalCustomers, verifiedCustomers, verificationRate);
     }
 }
