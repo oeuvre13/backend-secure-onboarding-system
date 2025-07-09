@@ -7,3 +7,9 @@
 - `main`
 - `develop`
 - `feature/*`
+
+![desain-branching-strategy](./img/desain-repo-repo-strategy.png)
+
+## Deployment Strategy (K8s)
+
+![deployment-strategy](./img/desain-deployment-k8s.png)
