@@ -29,10 +29,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Explicitly allow all auth endpoints
+                .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/health").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/**").permitAll()  // TEMPORARY: Allow all for debugging
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers
@@ -52,14 +54,16 @@ public class SecurityConfig {
             )
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, authException) -> {
+                    System.out.println("🚨 Authentication failed for: " + request.getRequestURI());
                     response.setStatus(401);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Unauthorized access\",\"message\":\"" + authException.getMessage() + "\"}");
+                    response.getWriter().write("{\"error\":\"Unauthorized\",\"path\":\"" + request.getRequestURI() + "\"}");
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    System.out.println("🚨 Access denied for: " + request.getRequestURI());
                     response.setStatus(403);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Access denied\",\"message\":\"" + accessDeniedException.getMessage() + "\"}");
+                    response.getWriter().write("{\"error\":\"Access denied\",\"path\":\"" + request.getRequestURI() + "\"}");
                 })
             );
         
@@ -108,14 +112,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-    
-    /**
-     * Security configuration for development mode
-     */
-    @Bean
-    public SecurityFilterChain devSecurityFilterChain(HttpSecurity http) throws Exception {
-        // This can be used for development with relaxed security if needed
-        return filterChain(http);
     }
 }
