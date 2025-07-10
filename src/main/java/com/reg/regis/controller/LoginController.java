@@ -20,7 +20,7 @@ public class LoginController {
     private RegistrationService registrationService;
     
     /**
-     * Customer login with cookie-based auth
+     * Customer login dengan cookie-based auth
      */
     @PostMapping("/login")
     public ResponseEntity<?> loginCustomer(@RequestBody Map<String, String> loginRequest, HttpServletResponse response) {
@@ -44,21 +44,13 @@ public class LoginController {
                 response.addCookie(authCookie);
                 
                 Map<String, Object> responseData = new HashMap<>();
-                responseData.put("message", "Login successful");
-                responseData.put("customer", Map.of(
-                    "id", customer.getId(),
-                    "name", customer.getName(),
-                    "email", customer.getEmail(),
-                    "phone", customer.getPhone(),
-                    "age", customer.getAge(),
-                    "emailVerified", customer.getEmailVerified()
-                ));
-                // Don't send token in response body
+                responseData.put("message", "Login berhasil");
+                responseData.put("customer", buildCustomerResponse(customer));
                 
                 return ResponseEntity.ok(responseData);
             }
             
-            return ResponseEntity.badRequest().body(Map.of("error", "Customer not found"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Customer tidak ditemukan"));
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -66,19 +58,19 @@ public class LoginController {
     }
     
     /**
-     * Check auth status from cookie
+     * Check auth status dari cookie
      */
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@CookieValue(value = "authToken", required = false) String token) {
         try {
             if (token == null || token.isEmpty()) {
-                return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+                return ResponseEntity.status(401).body(Map.of("error", "Tidak terautentikasi"));
             }
             
             // Validate token and get user
             String email = registrationService.getEmailFromToken(token);
             if (email == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid"));
             }
             
             Optional<Customer> customerOpt = registrationService.getCustomerByEmail(email);
@@ -87,22 +79,15 @@ public class LoginController {
                 
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("authenticated", true);
-                responseData.put("customer", Map.of(
-                    "id", customer.getId(),
-                    "name", customer.getName(),
-                    "email", customer.getEmail(),
-                    "phone", customer.getPhone(),
-                    "age", customer.getAge(),
-                    "emailVerified", customer.getEmailVerified()
-                ));
+                responseData.put("customer", buildCustomerResponse(customer));
                 
                 return ResponseEntity.ok(responseData);
             }
             
-            return ResponseEntity.status(401).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(401).body(Map.of("error", "User tidak ditemukan"));
             
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("error", "Authentication failed"));
+            return ResponseEntity.status(401).body(Map.of("error", "Autentikasi gagal"));
         }
     }
     
@@ -120,7 +105,7 @@ public class LoginController {
         authCookie.setDomain("localhost");
         response.addCookie(authCookie);
         
-        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+        return ResponseEntity.ok(Map.of("message", "Logout berhasil"));
     }
     
     /**
@@ -130,17 +115,17 @@ public class LoginController {
     public ResponseEntity<?> refreshToken(@CookieValue(value = "authToken", required = false) String token, HttpServletResponse response) {
         try {
             if (token == null || token.isEmpty()) {
-                return ResponseEntity.status(401).body(Map.of("error", "No token provided"));
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak ada"));
             }
             
             // Validate current token
             String email = registrationService.getEmailFromToken(token);
             if (email == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid"));
             }
             
-            // Generate new token
-            String newToken = registrationService.authenticateCustomer(email, null); // Assuming we can refresh without password
+            // Generate new token (refresh tanpa password)
+            String newToken = registrationService.generateTokenForEmail(email);
             
             // Set new cookie
             Cookie authCookie = new Cookie("authToken", newToken);
@@ -152,11 +137,11 @@ public class LoginController {
             response.addCookie(authCookie);
             
             return ResponseEntity.ok(Map.of(
-                "message", "Token refreshed successfully"
+                "message", "Token berhasil diperbarui"
             ));
             
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("error", "Token refresh failed"));
+            return ResponseEntity.status(401).body(Map.of("error", "Refresh token gagal"));
         }
     }
     
@@ -186,5 +171,48 @@ public class LoginController {
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("authenticated", false));
         }
+    }
+    
+    /**
+     * Helper method untuk build customer response
+     */
+    private Map<String, Object> buildCustomerResponse(Customer customer) {
+        Map<String, Object> customerData = new HashMap<>();
+        customerData.put("id", customer.getId());
+        customerData.put("namaLengkap", customer.getNamaLengkap());
+        customerData.put("email", customer.getEmail());
+        customerData.put("nomorTelepon", customer.getNomorTelepon());
+        customerData.put("tipeAkun", customer.getTipeAkun());
+        customerData.put("tempatLahir", customer.getTempatLahir());
+        customerData.put("tanggalLahir", customer.getTanggalLahir());
+        customerData.put("jenisKelamin", customer.getJenisKelamin());
+        customerData.put("agama", customer.getAgama());
+        customerData.put("statusPernikahan", customer.getStatusPernikahan());
+        customerData.put("pekerjaan", customer.getPekerjaan());
+        customerData.put("emailVerified", customer.getEmailVerified());
+        
+        // Alamat info (jika ada)
+        if (customer.getAlamat() != null) {
+            Map<String, Object> alamatData = new HashMap<>();
+            alamatData.put("namaAlamat", customer.getAlamat().getNamaAlamat());
+            alamatData.put("provinsi", customer.getAlamat().getProvinsi());
+            alamatData.put("kota", customer.getAlamat().getKota());
+            alamatData.put("kecamatan", customer.getAlamat().getKecamatan());
+            alamatData.put("kelurahan", customer.getAlamat().getKelurahan());
+            alamatData.put("kodePos", customer.getAlamat().getKodePos());
+            customerData.put("alamat", alamatData);
+        }
+        
+        // Wali info (jika ada)
+        if (customer.getWali() != null) {
+            Map<String, Object> waliData = new HashMap<>();
+            waliData.put("jenisWali", customer.getWali().getJenisWali());
+            waliData.put("namaLengkapWali", customer.getWali().getNamaLengkapWali());
+            waliData.put("pekerjaanWali", customer.getWali().getPekerjaanWali());
+            waliData.put("nomorTeleponWali", customer.getWali().getNomorTeleponWali());
+            customerData.put("wali", waliData);
+        }
+        
+        return customerData;
     }
 }

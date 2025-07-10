@@ -2,6 +2,8 @@ package com.reg.regis.service;
 
 import com.reg.regis.dto.RegistrationRequest;
 import com.reg.regis.model.Customer;
+import com.reg.regis.model.Alamat;
+import com.reg.regis.model.Wali;
 import com.reg.regis.repository.CustomerRepository;
 import com.reg.regis.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,64 +24,81 @@ public class RegistrationService {
     @Autowired
     private JwtUtil jwtUtil;
     
-    /**
-     * Register new customer
-     */
     @Transactional
     public Customer registerCustomer(RegistrationRequest request) {
-        // Check if email already exists
+        // Validasi duplikasi
         if (customerRepository.existsByEmailIgnoreCase(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new RuntimeException("Email sudah terdaftar");
         }
         
-        // Check if phone already exists
-        if (customerRepository.existsByPhone(request.getPhone())) {
-            throw new RuntimeException("Phone number already registered");
+        if (customerRepository.existsByNomorTelepon(request.getNomorTelepon())) {
+            throw new RuntimeException("Nomor telepon sudah terdaftar");
         }
         
-        // Create new customer
+        // Buat customer baru
         Customer customer = new Customer();
-        customer.setName(request.getName());
+        customer.setNamaLengkap(request.getNamaLengkap());
+        customer.setNamaIbuKandung(request.getNamaIbuKandung());
+        customer.setNomorTelepon(request.getNomorTelepon());
         customer.setEmail(request.getEmail().toLowerCase());
         customer.setPassword(passwordEncoder.encode(request.getPassword()));
-        customer.setPhone(request.getPhone());
-        customer.setAge(request.getAge());
+        customer.setTipeAkun(request.getTipeAkun());
+        customer.setTempatLahir(request.getTempatLahir());
+        customer.setTanggalLahir(request.getTanggalLahir());
+        customer.setJenisKelamin(request.getJenisKelamin());
+        customer.setAgama(request.getAgama());
+        customer.setStatusPernikahan(request.getStatusPernikahan());
+        customer.setPekerjaan(request.getPekerjaan());
+        customer.setSumberPenghasilan(request.getSumberPenghasilan());
+        customer.setRentangGaji(request.getRentangGaji());
+        customer.setTujuanPembuatanRekening(request.getTujuanPembuatanRekening());
+        customer.setKodeRekening(request.getKodeRekening());
         customer.setEmailVerified(false);
         
-        // Save to database
+        // Buat alamat dari nested object
+        Alamat alamat = new Alamat();
+        alamat.setNamaAlamat(request.getAlamat().getNamaAlamat());
+        alamat.setProvinsi(request.getAlamat().getProvinsi());
+        alamat.setKota(request.getAlamat().getKota());
+        alamat.setKecamatan(request.getAlamat().getKecamatan());
+        alamat.setKelurahan(request.getAlamat().getKelurahan());
+        alamat.setKodePos(request.getAlamat().getKodePos());
+        
+        // Buat wali dari nested object
+        Wali wali = new Wali();
+        wali.setJenisWali(request.getWali().getJenisWali());
+        wali.setNamaLengkapWali(request.getWali().getNamaLengkapWali());
+        wali.setPekerjaanWali(request.getWali().getPekerjaanWali());
+        wali.setAlamatWali(request.getWali().getAlamatWali());
+        wali.setNomorTeleponWali(request.getWali().getNomorTeleponWali());
+        
+        // Set relasi
+        customer.setAlamat(alamat);
+        customer.setWali(wali);
+        
         return customerRepository.save(customer);
     }
     
-    /**
-     * Authenticate customer login
-     */
     public String authenticateCustomer(String email, String password) {
         Optional<Customer> customerOpt = customerRepository.findByEmailIgnoreCase(email);
         
         if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Invalid email or password");
+            throw new RuntimeException("Email atau password salah");
         }
         
         Customer customer = customerOpt.get();
         
         if (!passwordEncoder.matches(password, customer.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new RuntimeException("Email atau password salah");
         }
         
-        // Generate JWT token
         return jwtUtil.generateToken(customer.getEmail());
     }
     
-    /**
-     * Get customer by email
-     */
     public Optional<Customer> getCustomerByEmail(String email) {
         return customerRepository.findByEmailIgnoreCase(email);
     }
     
-    /**
-     * Verify customer email
-     */
     @Transactional
     public void verifyEmail(String email) {
         Optional<Customer> customerOpt = customerRepository.findByEmailIgnoreCase(email);
@@ -90,9 +109,6 @@ public class RegistrationService {
         }
     }
     
-    /**
-     * Check password strength
-     */
     public String checkPasswordStrength(String password) {
         int score = 0;
         
@@ -103,16 +119,13 @@ public class RegistrationService {
         if (password.matches(".*[@$!%*?&].*")) score++;
         
         return switch (score) {
-            case 0, 1, 2 -> "weak";
-            case 3, 4 -> "medium";
-            case 5 -> "strong";
-            default -> "weak";
+            case 0, 1, 2 -> "lemah";
+            case 3, 4 -> "sedang";
+            case 5 -> "kuat";
+            default -> "lemah";
         };
     }
     
-    /**
-     * Get email from JWT token
-     */
     public String getEmailFromToken(String token) {
         try {
             return jwtUtil.getEmailFromToken(token);
@@ -121,16 +134,14 @@ public class RegistrationService {
         }
     }
     
-    /**
-     * Validate JWT token
-     */
     public boolean validateToken(String token) {
         return jwtUtil.validateToken(token);
     }
     
-
-
-    // Inner class for stats response
+    public String generateTokenForEmail(String email) {
+        return jwtUtil.generateToken(email);
+    }
+    
     public static class RegistrationStats {
         private final long totalCustomers;
         private final long verifiedCustomers;
@@ -147,9 +158,6 @@ public class RegistrationService {
         public double getVerificationRate() { return verificationRate; }
     }    
     
-    /**
-     * Get registration statistics - ADD THIS METHOD
-     */
     public RegistrationStats getRegistrationStats() {
         long totalCustomers = customerRepository.countTotalCustomers();
         long verifiedCustomers = customerRepository.countVerifiedCustomers();

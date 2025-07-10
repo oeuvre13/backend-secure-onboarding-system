@@ -21,7 +21,7 @@ public class RegistrationController {
     private RegistrationService registrationService;
     
     /**
-     * Register new customer with cookie-based auth
+     * Register new customer dengan data bank lengkap
      */
     @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegistrationRequest request, HttpServletResponse response) {
@@ -31,30 +31,20 @@ public class RegistrationController {
             
             // Set HTTP-only cookie
             Cookie authCookie = new Cookie("authToken", token);
-            authCookie.setHttpOnly(true); // Prevent XSS
-            authCookie.setSecure(false); // Set to true in production with HTTPS
+            authCookie.setHttpOnly(true);
+            authCookie.setSecure(false); // Set true untuk production HTTPS
             authCookie.setPath("/");
-            authCookie.setMaxAge(24 * 60 * 60); // 24 hours
+            authCookie.setMaxAge(24 * 60 * 60); // 24 jam
             response.addCookie(authCookie);
             
             Map<String, Object> responseData = new HashMap<>();
-            responseData.put("message", "Registration successful");
-            responseData.put("customer", Map.of(
-                "id", customer.getId(),
-                "name", customer.getName(),
-                "email", customer.getEmail(),
-                "phone", customer.getPhone(),
-                "age", customer.getAge(),
-                "emailVerified", customer.getEmailVerified()
-            ));
-            // Don't send token in response body for security
+            responseData.put("message", "Registrasi berhasil");
+            responseData.put("customer", buildCustomerResponse(customer));
             
             return ResponseEntity.ok(responseData);
             
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
     
@@ -70,7 +60,7 @@ public class RegistrationController {
     }
     
     /**
-     * Verify email
+     * Verify email customer
      */
     @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
@@ -78,7 +68,7 @@ public class RegistrationController {
             String email = request.get("email");
             registrationService.verifyEmail(email);
             
-            return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
+            return ResponseEntity.ok(Map.of("message", "Email berhasil diverifikasi"));
             
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -94,7 +84,7 @@ public class RegistrationController {
     }
     
     /**
-     * Health check
+     * Health check endpoint
      */
     @GetMapping("/health")
     public ResponseEntity<?> healthCheck() {
@@ -103,5 +93,78 @@ public class RegistrationController {
             "service", "Secure Customer Registration",
             "timestamp", System.currentTimeMillis()
         ));
+    }
+    
+    /**
+     * Get customer profile lengkap
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<?> getCustomerProfile(@CookieValue(value = "authToken", required = false) String token) {
+        try {
+            if (token == null || token.isEmpty()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak ditemukan"));
+            }
+            
+            String email = registrationService.getEmailFromToken(token);
+            if (email == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid"));
+            }
+            
+            var customerOpt = registrationService.getCustomerByEmail(email);
+            if (customerOpt.isPresent()) {
+                Customer customer = customerOpt.get();
+                return ResponseEntity.ok(Map.of(
+                    "profile", buildCustomerResponse(customer)
+                ));
+            }
+            
+            return ResponseEntity.status(404).body(Map.of("error", "Customer tidak ditemukan"));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Gagal mengambil profil"));
+        }
+    }
+    
+    /**
+     * Helper method untuk build customer response
+     */
+    private Map<String, Object> buildCustomerResponse(Customer customer) {
+        Map<String, Object> customerData = new HashMap<>();
+        customerData.put("id", customer.getId());
+        customerData.put("namaLengkap", customer.getNamaLengkap());
+        customerData.put("email", customer.getEmail());
+        customerData.put("nomorTelepon", customer.getNomorTelepon());
+        customerData.put("tipeAkun", customer.getTipeAkun());
+        customerData.put("tempatLahir", customer.getTempatLahir());
+        customerData.put("tanggalLahir", customer.getTanggalLahir());
+        customerData.put("jenisKelamin", customer.getJenisKelamin());
+        customerData.put("agama", customer.getAgama());
+        customerData.put("statusPernikahan", customer.getStatusPernikahan());
+        customerData.put("pekerjaan", customer.getPekerjaan());
+        customerData.put("emailVerified", customer.getEmailVerified());
+        
+        // Alamat info (jika ada)
+        if (customer.getAlamat() != null) {
+            Map<String, Object> alamatData = new HashMap<>();
+            alamatData.put("namaAlamat", customer.getAlamat().getNamaAlamat());
+            alamatData.put("provinsi", customer.getAlamat().getProvinsi());
+            alamatData.put("kota", customer.getAlamat().getKota());
+            alamatData.put("kecamatan", customer.getAlamat().getKecamatan());
+            alamatData.put("kelurahan", customer.getAlamat().getKelurahan());
+            alamatData.put("kodePos", customer.getAlamat().getKodePos());
+            customerData.put("alamat", alamatData);
+        }
+        
+        // Wali info (jika ada)
+        if (customer.getWali() != null) {
+            Map<String, Object> waliData = new HashMap<>();
+            waliData.put("jenisWali", customer.getWali().getJenisWali());
+            waliData.put("namaLengkapWali", customer.getWali().getNamaLengkapWali());
+            waliData.put("pekerjaanWali", customer.getWali().getPekerjaanWali());
+            waliData.put("nomorTeleponWali", customer.getWali().getNomorTeleponWali());
+            customerData.put("wali", waliData);
+        }
+        
+        return customerData;
     }
 }
