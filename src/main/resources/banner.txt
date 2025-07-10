@@ -5,6 +5,5 @@ __   __     ___  ___ _____ _   _
 / /^\ \     | |  | || |___| |\  |
 \/   \/     \_|  |_/\____/\_| \_/
                                  
-                                 
-${application.title} ${application.version}
-Copyright Kelompok 2 - 2025 ${spring-boot.version}
+Copyright@ Kelompok 2 - 2025 - Spring Boot ${spring-boot.version}
+
