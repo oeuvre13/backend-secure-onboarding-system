@@ -1,47 +1,159 @@
 package com.reg.regis.dto;
 
 import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+import java.time.LocalDate;
 
 public class RegistrationRequest {
     
-    @NotBlank(message = "Name is required")
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "Name can only contain letters and spaces")
-    private String name;
+    // Data Pribadi
+    @NotBlank(message = "Nama lengkap wajib diisi")
+    private String namaLengkap;
     
-    @NotBlank(message = "Email is required")
-    @Email(message = "Please provide a valid email")
+    @NotBlank(message = "Nama ibu kandung wajib diisi")
+    private String namaIbuKandung;
+    
+    @NotBlank(message = "Nomor telepon wajib diisi")
+    @Pattern(regexp = "^08[0-9]{8,11}$", message = "Format nomor telepon tidak valid")
+    private String nomorTelepon;
+    
+    @NotBlank(message = "Email wajib diisi")
+    @Email(message = "Format email tidak valid")
     private String email;
     
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "Password must contain uppercase, lowercase, number, and special character")
+    @NotBlank(message = "Password wajib diisi")
+    @Size(min = 8, message = "Password minimal 8 karakter")
     private String password;
     
-    @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+62[0-9]{9,13}$", message = "Phone must be valid Indonesian number (+62)")
-    private String phone;
+    @NotBlank(message = "Tipe akun wajib diisi")
+    private String tipeAkun;
     
-    @NotNull(message = "Age is required")
-    @Min(value = 17, message = "Age must be at least 17")
-    @Max(value = 120, message = "Age must be less than 120")
-    private Integer age;
+    @NotBlank(message = "Tempat lahir wajib diisi")
+    private String tempatLahir;
+    
+    @NotNull(message = "Tanggal lahir wajib diisi")
+    private LocalDate tanggalLahir;
+    
+    @NotBlank(message = "Jenis kelamin wajib diisi")
+    private String jenisKelamin;
+    
+    @NotBlank(message = "Agama wajib diisi")
+    private String agama;
+    
+    @NotBlank(message = "Status pernikahan wajib diisi")
+    private String statusPernikahan;
+    
+    @NotBlank(message = "Pekerjaan wajib diisi")
+    private String pekerjaan;
+    
+    @NotBlank(message = "Sumber penghasilan wajib diisi")
+    private String sumberPenghasilan;
+    
+    @NotBlank(message = "Rentang gaji wajib diisi")
+    private String rentangGaji;
+    
+    @NotBlank(message = "Tujuan pembuatan rekening wajib diisi")
+    private String tujuanPembuatanRekening;
+    
+    @NotNull(message = "Kode rekening wajib diisi")
+    private Integer kodeRekening;
+    
+    // Nested Objects
+    @Valid
+    @NotNull(message = "Data alamat wajib diisi")
+    private AlamatRequest alamat;
+    
+    @Valid
+    @NotNull(message = "Data wali wajib diisi")
+    private WaliRequest wali;
+    
+    // Nested class untuk Alamat
+    public static class AlamatRequest {
+        @NotBlank(message = "Alamat wajib diisi")
+        private String namaAlamat;
+        
+        @NotBlank(message = "Provinsi wajib diisi")
+        private String provinsi;
+        
+        @NotBlank(message = "Kota wajib diisi")
+        private String kota;
+        
+        @NotBlank(message = "Kecamatan wajib diisi")
+        private String kecamatan;
+        
+        @NotBlank(message = "Kelurahan wajib diisi")
+        private String kelurahan;
+        
+        @NotBlank(message = "Kode pos wajib diisi")
+        private String kodePos;
+        
+        // Getters and Setters
+        public String getNamaAlamat() { return namaAlamat; }
+        public void setNamaAlamat(String namaAlamat) { this.namaAlamat = namaAlamat; }
+        
+        public String getProvinsi() { return provinsi; }
+        public void setProvinsi(String provinsi) { this.provinsi = provinsi; }
+        
+        public String getKota() { return kota; }
+        public void setKota(String kota) { this.kota = kota; }
+        
+        public String getKecamatan() { return kecamatan; }
+        public void setKecamatan(String kecamatan) { this.kecamatan = kecamatan; }
+        
+        public String getKelurahan() { return kelurahan; }
+        public void setKelurahan(String kelurahan) { this.kelurahan = kelurahan; }
+        
+        public String getKodePos() { return kodePos; }
+        public void setKodePos(String kodePos) { this.kodePos = kodePos; }
+    }
+    
+    // Nested class untuk Wali
+    public static class WaliRequest {
+        @NotBlank(message = "Jenis wali wajib diisi")
+        private String jenisWali;
+        
+        @NotBlank(message = "Nama lengkap wali wajib diisi")
+        private String namaLengkapWali;
+        
+        @NotBlank(message = "Pekerjaan wali wajib diisi")
+        private String pekerjaanWali;
+        
+        @NotBlank(message = "Alamat wali wajib diisi")
+        private String alamatWali;
+        
+        @NotBlank(message = "Nomor telepon wali wajib diisi")
+        @Pattern(regexp = "^08[0-9]{8,11}$", message = "Format nomor telepon wali tidak valid")
+        private String nomorTeleponWali;
+        
+        // Getters and Setters
+        public String getJenisWali() { return jenisWali; }
+        public void setJenisWali(String jenisWali) { this.jenisWali = jenisWali; }
+        
+        public String getNamaLengkapWali() { return namaLengkapWali; }
+        public void setNamaLengkapWali(String namaLengkapWali) { this.namaLengkapWali = namaLengkapWali; }
+        
+        public String getPekerjaanWali() { return pekerjaanWali; }
+        public void setPekerjaanWali(String pekerjaanWali) { this.pekerjaanWali = pekerjaanWali; }
+        
+        public String getAlamatWali() { return alamatWali; }
+        public void setAlamatWali(String alamatWali) { this.alamatWali = alamatWali; }
+        
+        public String getNomorTeleponWali() { return nomorTeleponWali; }
+        public void setNomorTeleponWali(String nomorTeleponWali) { this.nomorTeleponWali = nomorTeleponWali; }
+    }
     
     // Constructors
     public RegistrationRequest() {}
     
-    public RegistrationRequest(String name, String email, String password, String phone, Integer age) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-        this.age = age;
-    }
+    // Main Getters and Setters
+    public String getNamaLengkap() { return namaLengkap; }
+    public void setNamaLengkap(String namaLengkap) { this.namaLengkap = namaLengkap; }
     
-    // Getters and Setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getNamaIbuKandung() { return namaIbuKandung; }
+    public void setNamaIbuKandung(String namaIbuKandung) { this.namaIbuKandung = namaIbuKandung; }
+    
+    public String getNomorTelepon() { return nomorTelepon; }
+    public void setNomorTelepon(String nomorTelepon) { this.nomorTelepon = nomorTelepon; }
     
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -49,69 +161,42 @@ public class RegistrationRequest {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
     
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public String getTipeAkun() { return tipeAkun; }
+    public void setTipeAkun(String tipeAkun) { this.tipeAkun = tipeAkun; }
     
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
-}
-
-// Response DTOs
-class RegistrationResponse {
-    private String message;
-    private String token;
-    private CustomerInfo customer;
+    public String getTempatLahir() { return tempatLahir; }
+    public void setTempatLahir(String tempatLahir) { this.tempatLahir = tempatLahir; }
     
-    public RegistrationResponse(String message, String token, CustomerInfo customer) {
-        this.message = message;
-        this.token = token;
-        this.customer = customer;
-    }
+    public LocalDate getTanggalLahir() { return tanggalLahir; }
+    public void setTanggalLahir(LocalDate tanggalLahir) { this.tanggalLahir = tanggalLahir; }
     
-    // Getters and Setters
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    public String getJenisKelamin() { return jenisKelamin; }
+    public void setJenisKelamin(String jenisKelamin) { this.jenisKelamin = jenisKelamin; }
     
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+    public String getAgama() { return agama; }
+    public void setAgama(String agama) { this.agama = agama; }
     
-    public CustomerInfo getCustomer() { return customer; }
-    public void setCustomer(CustomerInfo customer) { this.customer = customer; }
-}
-
-class CustomerInfo {
-    private Long id;
-    private String name;
-    private String email;
-    private String phone;
-    private Integer age;
-    private Boolean emailVerified;
+    public String getStatusPernikahan() { return statusPernikahan; }
+    public void setStatusPernikahan(String statusPernikahan) { this.statusPernikahan = statusPernikahan; }
     
-    public CustomerInfo(Long id, String name, String email, String phone, Integer age, Boolean emailVerified) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-        this.age = age;
-        this.emailVerified = emailVerified;
-    }
+    public String getPekerjaan() { return pekerjaan; }
+    public void setPekerjaan(String pekerjaan) { this.pekerjaan = pekerjaan; }
     
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getSumberPenghasilan() { return sumberPenghasilan; }
+    public void setSumberPenghasilan(String sumberPenghasilan) { this.sumberPenghasilan = sumberPenghasilan; }
     
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getRentangGaji() { return rentangGaji; }
+    public void setRentangGaji(String rentangGaji) { this.rentangGaji = rentangGaji; }
     
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getTujuanPembuatanRekening() { return tujuanPembuatanRekening; }
+    public void setTujuanPembuatanRekening(String tujuanPembuatanRekening) { this.tujuanPembuatanRekening = tujuanPembuatanRekening; }
     
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public Integer getKodeRekening() { return kodeRekening; }
+    public void setKodeRekening(Integer kodeRekening) { this.kodeRekening = kodeRekening; }
     
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
+    public AlamatRequest getAlamat() { return alamat; }
+    public void setAlamat(AlamatRequest alamat) { this.alamat = alamat; }
     
-    public Boolean getEmailVerified() { return emailVerified; }
-    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+    public WaliRequest getWali() { return wali; }
+    public void setWali(WaliRequest wali) { this.wali = wali; }
 }
