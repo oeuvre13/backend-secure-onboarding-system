@@ -1,48 +1,41 @@
 # Backend Secure on-boarding system
 
-## TEST REGISTER
+## Penggunaan .env
 
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "TestPass123!",
-    "phone": "+6281234567890",
-    "age": 25
-  }'
+Untuk pengujian local, pastikan terdapat file `.env` yang sejajar dengan `pom.xml` dengan minimum isi sebagai berikut:
+
+```conf
+DB_URL=jdbc:postgresql://localhost:5432/customer_registration
+DB_USERNAME=postgres
+DB_PASSWORD=password
+JWT_SECRET=mySecretKey123456789mySecretKey123456789
+JWT_EXPIRATION=86400000
+SERVER_PORT=8081
 ```
 
-LOGIN
+- dependency yang ditambahkan di `pom.xml` :
 
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "email": "test@example.com",
-    "password": "TestPass123!"
-  }'
+```xml
+  <dependency>
+    <groupId>io.github.cdimascio</groupId>
+    <artifactId>dotenv-java</artifactId>
+    <version>2.3.2</version>
+  </dependency>
 ```
 
-Access Protected Endpoint
+- kode yang ditambahkan di main application Java (`RegistrationAbsoluteApplication.java`) :
 
-```bash
-curl -X GET http://localhost:8080/api/auth/me \
-  -b cookies.txt
+```java
+public static void main(String[] args) {
+    // Load .env variables
+    Dotenv dotenv = Dotenv.load();
+    dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+
+    // ...
+}
 ```
 
-LOGOUT
-
-```bash
-curl -X POST http://localhost:8080/api/auth/logout \
-  -b cookies.txt \
-  -c cookies.txt
-```
-
-🔑 Token Flow Summary
+## 🔑 Token Flow Summary
 
 - Backend:
 
@@ -84,5 +77,7 @@ Token expires → Automatic redirect to login
 - `feature/*`
 
 ![branching-strategy](./img/desain-repo-repo-strategy.png)
+
+## Deployment Strategy (plan)
 
 ![deployment-strategy](./img/desain-deployment-k8s.png)
