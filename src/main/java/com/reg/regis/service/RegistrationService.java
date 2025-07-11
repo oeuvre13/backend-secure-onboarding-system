@@ -1,3 +1,4 @@
+// RegistrationService.java - Updated untuk simple database
 package com.reg.regis.service;
 
 import com.reg.regis.dto.RegistrationRequest;
