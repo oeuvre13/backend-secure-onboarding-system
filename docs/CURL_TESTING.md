@@ -3,6 +3,13 @@
 > Bash script untuk menguji berbagai endpoint dalam sistem Secure Onboarding.  
 > Jalankan di terminal menggunakan: `bash test.sh`
 
+📝 Important Notes:
+
+Cookie Handling: Commands menggunakan -c cookies.txt untuk save cookies dan -b cookies.txt untuk load cookies
+JSON Formatting: Pakai | jq '.' untuk pretty-print JSON (install jq jika belum ada)
+Test Data: Email testuser@example.com dengan password TestPassword123!
+Cleanup: Script otomatis hapus cookie files di akhir
+
 ## 🔧 Environment
 
 - Base URL: `http://localhost:8081/api/auth`

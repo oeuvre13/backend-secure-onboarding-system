@@ -16,7 +16,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE LOWER(c.email) = LOWER(:email)")
     boolean existsByEmailIgnoreCase(@Param("email") String email);
     
-    // Update untuk nomor telepon baru
     boolean existsByNomorTelepon(String nomorTelepon);
     
     @Query("SELECT c FROM Customer c WHERE LOWER(c.email) = LOWER(:email) AND c.emailVerified = :verified")
