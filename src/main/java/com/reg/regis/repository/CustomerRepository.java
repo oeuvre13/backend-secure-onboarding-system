@@ -18,6 +18,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
     boolean existsByNomorTelepon(String nomorTelepon);
     
+    // NIK related methods untuk DevSecOps
+    @Query("SELECT c FROM Customer c WHERE c.nik = :nik")
+    Optional<Customer> findByNik(@Param("nik") String nik);
+    
+    @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE c.nik = :nik")
+    boolean existsByNik(@Param("nik") String nik);
+    
     @Query("SELECT c FROM Customer c WHERE LOWER(c.email) = LOWER(:email) AND c.emailVerified = :verified")
     Optional<Customer> findByEmailAndEmailVerified(@Param("email") String email, @Param("verified") Boolean verified);
     
@@ -26,4 +33,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.emailVerified = true")
     Long countVerifiedCustomers();
+    
+    // Security queries untuk audit trail
+    @Query("SELECT c FROM Customer c WHERE c.nik = :nik AND LOWER(c.email) = LOWER(:email)")
+    Optional<Customer> findByNikAndEmail(@Param("nik") String nik, @Param("email") String email);
+    
+    @Query("SELECT COUNT(c) FROM Customer c WHERE c.createdAt >= CURRENT_DATE")
+    Long countTodayRegistrations();
 }

@@ -21,7 +21,11 @@ public class RegistrationController {
     private RegistrationService registrationService;
     
     /**
-     * Register new customer dengan data bank lengkap
+     * Register customer dengan validasi ketat
+     * - NIK harus ada di database KTP Dukcapil
+     * - Nama harus sesuai dengan KTP
+     * - Email tidak boleh duplikat
+     * - Nomor HP tidak boleh duplikat
      */
     @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegistrationRequest request, HttpServletResponse response) {
@@ -32,19 +36,31 @@ public class RegistrationController {
             // Set HTTP-only cookie
             Cookie authCookie = new Cookie("authToken", token);
             authCookie.setHttpOnly(true);
-            authCookie.setSecure(false); // Set true untuk production HTTPS
+            authCookie.setSecure(false);
             authCookie.setPath("/");
-            authCookie.setMaxAge(24 * 60 * 60); // 24 jam
+            authCookie.setMaxAge(24 * 60 * 60);
             response.addCookie(authCookie);
             
             Map<String, Object> responseData = new HashMap<>();
-            responseData.put("message", "Registrasi berhasil");
+            responseData.put("success", true);
+            responseData.put("message", "Registrasi berhasil! Data Anda telah terverifikasi dengan KTP Dukcapil.");
             responseData.put("customer", buildCustomerResponse(customer));
             
             return ResponseEntity.ok(responseData);
             
+        } catch (RuntimeException e) {
+            // Return specific validation error
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", e.getMessage(),
+                "type", "validation_error"
+            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", "Terjadi kesalahan sistem: " + e.getMessage(),
+                "type", "system_error"
+            ));
         }
     }
     
@@ -57,6 +73,30 @@ public class RegistrationController {
         String strength = registrationService.checkPasswordStrength(password);
         
         return ResponseEntity.ok(Map.of("strength", strength));
+    }
+    
+    /**
+     * Validate NIK format
+     */
+    @PostMapping("/validate-nik")
+    public ResponseEntity<?> validateNik(@RequestBody Map<String, String> request) {
+        try {
+            String nik = request.get("nik");
+            boolean isValid = registrationService.validateNikFormat(nik);
+            boolean isExists = registrationService.getCustomerByNik(nik).isPresent();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", isValid);
+            response.put("exists", isExists);
+            response.put("message", isValid ? 
+                (isExists ? "NIK sudah terdaftar" : "NIK valid") : 
+                "Format NIK tidak valid");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
     
     /**
@@ -90,13 +130,19 @@ public class RegistrationController {
     public ResponseEntity<?> healthCheck() {
         return ResponseEntity.ok(Map.of(
             "status", "OK",
-            "service", "Secure Customer Registration",
-            "timestamp", System.currentTimeMillis()
+            "service", "Secure Customer Registration dengan KTP Validation",
+            "timestamp", System.currentTimeMillis(),
+            "validations", Map.of(
+                "nikMustExistInKtp", true,
+                "nameMatchWithKtp", true,
+                "emailUnique", true,
+                "phoneUnique", true
+            )
         ));
     }
     
     /**
-     * Get customer profile lengkap
+     * Get customer profile
      */
     @GetMapping("/profile")
     public ResponseEntity<?> getCustomerProfile(@CookieValue(value = "authToken", required = false) String token) {
@@ -132,6 +178,7 @@ public class RegistrationController {
         Map<String, Object> customerData = new HashMap<>();
         customerData.put("id", customer.getId());
         customerData.put("namaLengkap", customer.getNamaLengkap());
+        customerData.put("nik", customer.getNik());
         customerData.put("email", customer.getEmail());
         customerData.put("nomorTelepon", customer.getNomorTelepon());
         customerData.put("tipeAkun", customer.getTipeAkun());
@@ -143,7 +190,7 @@ public class RegistrationController {
         customerData.put("pekerjaan", customer.getPekerjaan());
         customerData.put("emailVerified", customer.getEmailVerified());
         
-        // Alamat info (jika ada)
+        // Alamat info
         if (customer.getAlamat() != null) {
             Map<String, Object> alamatData = new HashMap<>();
             alamatData.put("namaAlamat", customer.getAlamat().getNamaAlamat());
@@ -155,7 +202,7 @@ public class RegistrationController {
             customerData.put("alamat", alamatData);
         }
         
-        // Wali info (jika ada)
+        // Wali info
         if (customer.getWali() != null) {
             Map<String, Object> waliData = new HashMap<>();
             waliData.put("jenisWali", customer.getWali().getJenisWali());
