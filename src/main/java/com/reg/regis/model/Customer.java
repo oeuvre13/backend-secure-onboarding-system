@@ -14,70 +14,76 @@ public class Customer {
     private Long id;
     
     // Data Pribadi
-    @NotBlank
+    @NotBlank(message = "Nama lengkap wajib diisi")
     @Column(name = "nama_lengkap", nullable = false)
     private String namaLengkap;
     
-    @NotBlank
+    @NotBlank(message = "NIK wajib diisi")
+    @Size(min = 16, max = 16, message = "NIK harus 16 digit")
+    @Pattern(regexp = "^[0-9]{16}$", message = "NIK hanya boleh berisi angka")
+    @Column(name = "nik", nullable = false, unique = true, length = 16)
+    private String nik;
+    
+    @NotBlank(message = "Nama ibu kandung wajib diisi")
     @Column(name = "nama_ibu_kandung", nullable = false)
     private String namaIbuKandung;
     
-    @NotBlank
-    @Pattern(regexp = "^08[0-9]{8,11}$")
+    @NotBlank(message = "Nomor telepon wajib diisi")
+    @Pattern(regexp = "^08[0-9]{8,11}$", message = "Format nomor telepon tidak valid")
     @Column(name = "nomor_telepon", nullable = false)
     private String nomorTelepon;
     
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email wajib diisi")
+    @Email(message = "Format email tidak valid")
     @Column(nullable = false, unique = true)
     private String email;
     
-    @NotBlank
-    @Size(min = 8)
+    @NotBlank(message = "Password wajib diisi")
+    @Size(min = 8, message = "Password minimal 8 karakter")
     @Column(nullable = false)
     private String password;
     
-    @NotBlank
+    @NotBlank(message = "Tipe akun wajib diisi")
     @Column(name = "tipe_akun", nullable = false)
     private String tipeAkun;
     
-    @NotBlank
+    @NotBlank(message = "Tempat lahir wajib diisi")
     @Column(name = "tempat_lahir", nullable = false)
     private String tempatLahir;
     
-    @NotNull
+    @NotNull(message = "Tanggal lahir wajib diisi")
     @Column(name = "tanggal_lahir", nullable = false)
     private LocalDate tanggalLahir;
     
-    @NotBlank
+    @NotBlank(message = "Jenis kelamin wajib diisi")
     @Column(name = "jenis_kelamin", nullable = false)
     private String jenisKelamin;
     
-    @NotBlank
+    @NotBlank(message = "Agama wajib diisi")
     @Column(nullable = false)
     private String agama;
     
-    @NotBlank
+    @NotBlank(message = "Status pernikahan wajib diisi")
     @Column(name = "status_pernikahan", nullable = false)
     private String statusPernikahan;
     
-    @NotBlank
+    @NotBlank(message = "Pekerjaan wajib diisi")
     @Column(nullable = false)
     private String pekerjaan;
     
-    @NotBlank
+    @NotBlank(message = "Sumber penghasilan wajib diisi")
     @Column(name = "sumber_penghasilan", nullable = false)
     private String sumberPenghasilan;
     
-    @NotBlank
+    @NotBlank(message = "Rentang gaji wajib diisi")
     @Column(name = "rentang_gaji", nullable = false)
     private String rentangGaji;
     
-    @NotBlank
+    @NotBlank(message = "Tujuan pembuatan rekening wajib diisi")
     @Column(name = "tujuan_pembuatan_rekening", nullable = false)
     private String tujuanPembuatanRekening;
     
-    @NotNull
+    @NotNull(message = "Kode rekening wajib diisi")
     @Column(name = "kode_rekening", nullable = false)
     private Integer kodeRekening;
     
@@ -120,6 +126,9 @@ public class Customer {
     
     public String getNamaLengkap() { return namaLengkap; }
     public void setNamaLengkap(String namaLengkap) { this.namaLengkap = namaLengkap; }
+    
+    public String getNik() { return nik; }
+    public void setNik(String nik) { this.nik = nik; }
     
     public String getNamaIbuKandung() { return namaIbuKandung; }
     public void setNamaIbuKandung(String namaIbuKandung) { this.namaIbuKandung = namaIbuKandung; }

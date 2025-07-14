@@ -10,6 +10,11 @@ public class RegistrationRequest {
     @NotBlank(message = "Nama lengkap wajib diisi")
     private String namaLengkap;
     
+    @NotBlank(message = "NIK wajib diisi")
+    @Size(min = 16, max = 16, message = "NIK harus 16 digit")
+    @Pattern(regexp = "^[0-9]{16}$", message = "NIK hanya boleh berisi angka 16 digit")
+    private String nik;
+    
     @NotBlank(message = "Nama ibu kandung wajib diisi")
     private String namaIbuKandung;
     
@@ -87,6 +92,9 @@ public class RegistrationRequest {
         @NotBlank(message = "Kode pos wajib diisi")
         private String kodePos;
         
+        // Constructors
+        public AlamatRequest() {}
+        
         // Getters and Setters
         public String getNamaAlamat() { return namaAlamat; }
         public void setNamaAlamat(String namaAlamat) { this.namaAlamat = namaAlamat; }
@@ -125,6 +133,9 @@ public class RegistrationRequest {
         @Pattern(regexp = "^08[0-9]{8,11}$", message = "Format nomor telepon wali tidak valid")
         private String nomorTeleponWali;
         
+        // Constructors
+        public WaliRequest() {}
+        
         // Getters and Setters
         public String getJenisWali() { return jenisWali; }
         public void setJenisWali(String jenisWali) { this.jenisWali = jenisWali; }
@@ -148,6 +159,9 @@ public class RegistrationRequest {
     // Main Getters and Setters
     public String getNamaLengkap() { return namaLengkap; }
     public void setNamaLengkap(String namaLengkap) { this.namaLengkap = namaLengkap; }
+    
+    public String getNik() { return nik; }
+    public void setNik(String nik) { this.nik = nik; }
     
     public String getNamaIbuKandung() { return namaIbuKandung; }
     public void setNamaIbuKandung(String namaIbuKandung) { this.namaIbuKandung = namaIbuKandung; }
