@@ -1,4 +1,3 @@
-// VerificationController.java - Clean and Complete
 package com.reg.regis.controller;
 
 import com.reg.regis.dto.NikVerificationRequest;
@@ -22,10 +21,70 @@ public class VerificationController {
     private VerificationService verificationService;
     
     /**
-     * Verifikasi NIK dengan nama lengkap
+     * Verifikasi NIK dengan nama lengkap - Support both DTO dan Map
      */
     @PostMapping("/nik")
-    public ResponseEntity<?> verifyNik(@Valid @RequestBody NikVerificationRequest request) {
+    public ResponseEntity<?> verifyNik(@RequestBody Map<String, String> requestBody) {
+        try {
+            // Extract data dari request body (dari React)
+            String nik = requestBody.get("nik");
+            String namaLengkap = requestBody.get("namaLengkap");
+            
+            // Validasi input
+            if (nik == null || nik.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "valid", false,
+                    "message", "NIK wajib diisi"
+                ));
+            }
+            
+            if (namaLengkap == null || namaLengkap.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "valid", false,
+                    "message", "Nama lengkap wajib diisi"
+                ));
+            }
+            
+            if (nik.length() != 16 || !nik.matches("^[0-9]{16}$")) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "valid", false,
+                    "message", "NIK harus 16 digit angka"
+                ));
+            }
+            
+            // Buat DTO untuk service
+            NikVerificationRequest request = new NikVerificationRequest(nik, namaLengkap);
+            VerificationResponse response = verificationService.verifyNik(request);
+            
+            if (response.isValid()) {
+                return ResponseEntity.ok(Map.of(
+                    "valid", true,
+                    "message", response.getMessage(),
+                    "data", response.getData() != null ? response.getData() : Map.of()
+                ));
+            } else {
+                return ResponseEntity.ok(Map.of( // Ganti ke 200 OK agar FE bisa handle
+                    "valid", false,
+                    "message", response.getMessage()
+                ));
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error in verifyNik: " + e.getMessage());
+            e.printStackTrace();
+            
+            return ResponseEntity.badRequest().body(Map.of(
+                "valid", false,
+                "message", "Terjadi kesalahan saat verifikasi NIK: " + e.getMessage()
+            ));
+        }
+    }
+    
+    /**
+     * Alternative endpoint dengan @Valid DTO (untuk consistency)
+     */
+    @PostMapping("/nik-dto")
+    public ResponseEntity<?> verifyNikWithDto(@Valid @RequestBody NikVerificationRequest request) {
         try {
             VerificationResponse response = verificationService.verifyNik(request);
             
@@ -33,10 +92,10 @@ public class VerificationController {
                 return ResponseEntity.ok(Map.of(
                     "valid", true,
                     "message", response.getMessage(),
-                    "ktpData", response.getData()
+                    "data", response.getData()
                 ));
             } else {
-                return ResponseEntity.badRequest().body(Map.of(
+                return ResponseEntity.ok(Map.of(
                     "valid", false,
                     "message", response.getMessage()
                 ));
@@ -194,13 +253,19 @@ public class VerificationController {
             "status", "OK",
             "service", "Verification Service (NIK, Email, Phone)",
             "timestamp", System.currentTimeMillis(),
+            "supportedFormats", Map.of(
+                "nikVerification", "{ \"nik\": \"string\", \"namaLengkap\": \"string\" }",
+                "nikCheck", "{ \"nik\": \"string\" }",
+                "emailVerification", "{ \"email\": \"string\" }",
+                "phoneVerification", "{ \"nomorTelepon\": \"string\" }"
+            ),
             "endpoints", Map.of(
-                "nikVerification", "/verification/nik",
-                "emailVerification", "/verification/email", 
-                "phoneVerification", "/verification/phone",
-                "nikCheck", "/verification/nik-check",
-                "ktpData", "/verification/ktp-data/{nik}",
-                "stats", "/verification/stats"
+                "nikVerification", "POST /verification/nik",
+                "emailVerification", "POST /verification/email", 
+                "phoneVerification", "POST /verification/phone",
+                "nikCheck", "POST /verification/nik-check",
+                "ktpData", "GET /verification/ktp-data/{nik}",
+                "stats", "GET /verification/stats"
             )
         ));
     }

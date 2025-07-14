@@ -19,7 +19,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     
-    @Value("${app.cors.allowed-origins}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
     
     @Bean
@@ -29,12 +29,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Explicitly allow all auth endpoints
+                // Public endpoints untuk FE
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/verification/**").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/info").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/**").permitAll()  // TEMPORARY: Allow all for debugging
+                // Allow OPTIONS untuk CORS preflight
+                .requestMatchers("OPTIONS", "/**").permitAll()
+                // Protected endpoints
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers
@@ -54,16 +57,14 @@ public class SecurityConfig {
             )
             .exceptionHandling(exceptions -> exceptions
                 .authenticationEntryPoint((request, response, authException) -> {
-                    System.out.println("🚨 Authentication failed for: " + request.getRequestURI());
                     response.setStatus(401);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Unauthorized\",\"path\":\"" + request.getRequestURI() + "\"}");
+                    response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Token tidak valid atau sudah expire\"}");
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    System.out.println("🚨 Access denied for: " + request.getRequestURI());
                     response.setStatus(403);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Access denied\",\"path\":\"" + request.getRequestURI() + "\"}");
+                    response.getWriter().write("{\"error\":\"Access denied\",\"message\":\"Akses ditolak\"}");
                 })
             );
         
@@ -79,16 +80,24 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Parse allowed origins from properties
+        // Parse allowed origins dari environment
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOriginPatterns(origins);
+        System.out.println("🌐 CORS Allowed Origins: " + origins); // Debug log
         
-        // Allow common HTTP methods
+        // Set allowed origins - tambahkan Cloudflare URL baru
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:5173", 
+            "https://rank-aspect-strange-navigator.trycloudflare.com",
+            "https://*.trycloudflare.com" // Allow semua subdomain trycloudflare
+        ));
+        
+        // Allow semua HTTP methods yang dibutuhkan FE
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"
         ));
         
-        // Allow common headers
+        // Allow headers yang dibutuhkan FE
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", 
             "Content-Type", 
@@ -99,14 +108,15 @@ public class SecurityConfig {
             "Access-Control-Request-Headers"
         ));
         
-        // Expose headers that frontend might need
+        // Expose headers untuk FE
         configuration.setExposedHeaders(Arrays.asList(
             "Access-Control-Allow-Origin",
             "Access-Control-Allow-Credentials",
-            "Authorization"
+            "Authorization",
+            "Set-Cookie"
         ));
         
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // Important untuk cookies
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
