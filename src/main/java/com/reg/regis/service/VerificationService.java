@@ -2,9 +2,7 @@ package com.reg.regis.service;
 
 import com.reg.regis.dto.*;
 import com.reg.regis.model.Customer;
-import com.reg.regis.model.KtpDukcapil;
 import com.reg.regis.repository.CustomerRepository;
-import com.reg.regis.repository.KtpDukcapilRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,49 +15,42 @@ import java.util.Optional;
 public class VerificationService {
     
     @Autowired
-    private KtpDukcapilRepository ktpDukcapilRepository;
-    
-    @Autowired
     private CustomerRepository customerRepository;
     
+    @Autowired
+    private DukcapilClientService dukcapilClientService;
+    
     /**
-     * Verifikasi NIK dengan nama lengkap
+     * Verifikasi NIK dengan nama lengkap via Dukcapil Service
      */
     @Transactional(readOnly = true)
     public VerificationResponse verifyNik(NikVerificationRequest request) {
         try {
-            // Cari data KTP berdasarkan NIK dan nama
-            Optional<KtpDukcapil> ktpOpt = ktpDukcapilRepository.findByNikAndNama(
+            System.out.println("🔍 Starting NIK verification for: " + request.getNik());
+            
+            // Call Dukcapil Service via HTTP
+            DukcapilResponseDto dukcapilResponse = dukcapilClientService.verifyNikAndName(
                 request.getNik(), 
                 request.getNamaLengkap()
             );
             
-            if (ktpOpt.isPresent()) {
-                KtpDukcapil ktpData = ktpOpt.get();
-                KtpDataDto ktpDto = convertToDto(ktpData);
-                
+            if (dukcapilResponse.isValid()) {
+                System.out.println("✅ NIK verification SUCCESS via Dukcapil Service");
                 return new VerificationResponse(
                     true, 
-                    "Data NIK dan nama valid sesuai dengan data Dukcapil", 
-                    ktpDto
+                    dukcapilResponse.getMessage(), 
+                    dukcapilResponse.getData()
                 );
             } else {
-                // Check apakah NIK ada tapi nama tidak cocok
-                Optional<KtpDukcapil> nikExists = ktpDukcapilRepository.findByNik(request.getNik());
-                if (nikExists.isPresent()) {
-                    return new VerificationResponse(
-                        false, 
-                        "NIK terdaftar namun nama tidak sesuai dengan data Dukcapil"
-                    );
-                } else {
-                    return new VerificationResponse(
-                        false, 
-                        "NIK tidak terdaftar di database Dukcapil"
-                    );
-                }
+                System.out.println("❌ NIK verification FAILED via Dukcapil Service: " + dukcapilResponse.getMessage());
+                return new VerificationResponse(
+                    false, 
+                    dukcapilResponse.getMessage()
+                );
             }
             
         } catch (Exception e) {
+            System.err.println("💥 Error in NIK verification: " + e.getMessage());
             return new VerificationResponse(
                 false, 
                 "Terjadi kesalahan saat verifikasi NIK: " + e.getMessage()
@@ -115,7 +106,6 @@ public class VerificationService {
             boolean phoneExists = customerRepository.existsByNomorTelepon(request.getNomorTelepon());
             
             if (phoneExists) {
-                // Cari customer berdasarkan nomor telepon
                 Optional<Customer> customerOpt = customerRepository.findAll()
                     .stream()
                     .filter(c -> c.getNomorTelepon().equals(request.getNomorTelepon()))
@@ -151,38 +141,11 @@ public class VerificationService {
     }
     
     /**
-     * Check apakah NIK terdaftar (tanpa nama)
+     * Check apakah NIK terdaftar di Dukcapil (tanpa nama)
      */
     @Transactional(readOnly = true)
     public boolean isNikRegistered(String nik) {
-        return ktpDukcapilRepository.existsByNik(nik);
-    }
-    
-    /**
-     * Get data KTP berdasarkan NIK saja
-     */
-    @Transactional(readOnly = true)
-    public Optional<KtpDukcapil> getKtpDataByNik(String nik) {
-        return ktpDukcapilRepository.findByNik(nik);
-    }
-    
-    /**
-     * Convert KtpDukcapil entity ke DTO
-     */
-    private KtpDataDto convertToDto(KtpDukcapil ktpData) {
-        KtpDataDto dto = new KtpDataDto();
-        dto.setNik(ktpData.getNik());
-        dto.setNamaLengkap(ktpData.getNamaLengkap());
-        dto.setTempatLahir(ktpData.getTempatLahir());
-        dto.setTanggalLahir(ktpData.getTanggalLahir().toString());
-        dto.setJenisKelamin(ktpData.getJenisKelamin().getValue());
-        dto.setAlamat(ktpData.getNamaAlamat());
-        dto.setKecamatan(ktpData.getKecamatan());
-        dto.setKelurahan(ktpData.getKelurahan());
-        dto.setAgama(ktpData.getAgama().getValue());
-        dto.setStatusPerkawinan(ktpData.getStatusPerkawinan());
-        
-        return dto;
+        return dukcapilClientService.isNikExists(nik);
     }
     
     /**
@@ -198,13 +161,14 @@ public class VerificationService {
         double verificationRate = totalCustomers > 0 ? 
             (double) verifiedCustomers / totalCustomers * 100 : 0;
         
-        // KTP stats
-        long totalKtpRecords = ktpDukcapilRepository.count();
+        // Dukcapil service health
+        boolean dukcapilHealthy = dukcapilClientService.isDukcapilServiceHealthy();
         
         stats.put("totalCustomers", totalCustomers);
         stats.put("verifiedCustomers", verifiedCustomers);
         stats.put("verificationRate", Math.round(verificationRate * 100.0) / 100.0);
-        stats.put("totalKtpRecords", totalKtpRecords);
+        stats.put("dukcapilServiceHealthy", dukcapilHealthy);
+        stats.put("dukcapilServiceUrl", dukcapilClientService.getDukcapilBaseUrl());
         stats.put("timestamp", System.currentTimeMillis());
         
         return stats;

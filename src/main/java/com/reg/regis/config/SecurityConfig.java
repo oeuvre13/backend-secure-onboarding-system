@@ -13,7 +13,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -29,15 +28,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints untuk FE
+                // Public endpoints
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/verification/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/actuator/info").permitAll()
                 .requestMatchers("/error").permitAll()
-                // Allow OPTIONS untuk CORS preflight
                 .requestMatchers("OPTIONS", "/**").permitAll()
-                // Protected endpoints
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers
@@ -50,6 +46,7 @@ public class SecurityConfig {
                     response.setHeader("X-Content-Type-Options", "nosniff");
                     response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
                     response.setHeader("X-XSS-Protection", "1; mode=block");
+                    response.setHeader("X-Service", "Customer-Registration-Service");
                     response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
                     response.setHeader("Pragma", "no-cache");
                     response.setHeader("Expires", "0");
@@ -80,24 +77,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Parse allowed origins dari environment
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        System.out.println("🌐 CORS Allowed Origins: " + origins); // Debug log
-        
-        // Set allowed origins - tambahkan Cloudflare URL baru
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",
             "http://localhost:5173", 
-            "https://rank-aspect-strange-navigator.trycloudflare.com",
-            "https://*.trycloudflare.com" // Allow semua subdomain trycloudflare
+            "https://*.trycloudflare.com"
         ));
         
-        // Allow semua HTTP methods yang dibutuhkan FE
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"
         ));
         
-        // Allow headers yang dibutuhkan FE
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", 
             "Content-Type", 
@@ -108,7 +97,6 @@ public class SecurityConfig {
             "Access-Control-Request-Headers"
         ));
         
-        // Expose headers untuk FE
         configuration.setExposedHeaders(Arrays.asList(
             "Access-Control-Allow-Origin",
             "Access-Control-Allow-Credentials",
@@ -116,7 +104,7 @@ public class SecurityConfig {
             "Set-Cookie"
         ));
         
-        configuration.setAllowCredentials(true); // Important untuk cookies
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

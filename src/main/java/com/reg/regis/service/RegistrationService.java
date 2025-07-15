@@ -1,18 +1,18 @@
 package com.reg.regis.service;
 
 import com.reg.regis.dto.RegistrationRequest;
+import com.reg.regis.dto.DukcapilResponseDto;
 import com.reg.regis.model.Customer;
 import com.reg.regis.model.Alamat;
 import com.reg.regis.model.Wali;
-import com.reg.regis.model.KtpDukcapil;
 import com.reg.regis.repository.CustomerRepository;
-import com.reg.regis.repository.KtpDukcapilRepository;
 import com.reg.regis.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class RegistrationService {
@@ -21,29 +21,29 @@ public class RegistrationService {
     private CustomerRepository customerRepository;
     
     @Autowired
-    private KtpDukcapilRepository ktpDukcapilRepository;
-    
-    @Autowired
     private PasswordEncoder passwordEncoder;
     
     @Autowired
     private JwtUtil jwtUtil;
     
+    @Autowired
+    private DukcapilClientService dukcapilClientService;
+    
     @Transactional
     public Customer registerCustomer(RegistrationRequest request) {
-        // 1. VALIDASI NIK HARUS ADA DI KTP DUKCAPIL
-        Optional<KtpDukcapil> ktpOpt = ktpDukcapilRepository.findByNik(request.getNik());
-        if (ktpOpt.isEmpty()) {
-            throw new RuntimeException("NIK tidak terdaftar di database Dukcapil. Silakan gunakan NIK yang valid.");
+        // 1. CHECK DUKCAPIL SERVICE AVAILABILITY
+        if (!dukcapilClientService.isDukcapilServiceHealthy()) {
+            throw new RuntimeException("Dukcapil service tidak tersedia. Silakan coba lagi nanti.");
         }
         
-        KtpDukcapil ktpData = ktpOpt.get();
+        // 2. VALIDASI NIK DAN NAMA VIA DUKCAPIL SERVICE
+        DukcapilResponseDto dukcapilResponse = dukcapilClientService.verifyNikAndName(
+            request.getNik(), 
+            request.getNamaLengkap()
+        );
         
-        // 2. VALIDASI NAMA HARUS SESUAI DENGAN KTP
-        if (!ktpData.getNamaLengkap().equalsIgnoreCase(request.getNamaLengkap())) {
-            throw new RuntimeException("Nama lengkap tidak sesuai dengan data KTP. " +
-                "Data KTP: " + ktpData.getNamaLengkap() + 
-                ", Input: " + request.getNamaLengkap());
+        if (!dukcapilResponse.isValid()) {
+            throw new RuntimeException("Verifikasi Dukcapil gagal: " + dukcapilResponse.getMessage());
         }
         
         // 3. VALIDASI EMAIL TIDAK BOLEH DUPLIKAT
@@ -61,25 +61,41 @@ public class RegistrationService {
             throw new RuntimeException("NIK " + request.getNik() + " sudah pernah digunakan untuk registrasi.");
         }
         
-        // 6. VALIDASI DATA TAMBAHAN SESUAI KTP (OPSIONAL TAPI DIREKOMENDASIKAN)
-        validateAdditionalKtpData(request, ktpData);
-        
-        // 7. BUAT CUSTOMER BARU
+        // 6. BUAT CUSTOMER BARU DENGAN DATA DARI DUKCAPIL
         Customer customer = new Customer();
-        customer.setNamaLengkap(ktpData.getNamaLengkap()); // Gunakan nama dari KTP
+        Map<String, Object> ktpData = dukcapilResponse.getData();
+        
+        // Data dari KTP Dukcapil (auto-fill)
+        if (ktpData != null) {
+            customer.setNamaLengkap((String) ktpData.get("namaLengkap"));
+            customer.setTempatLahir((String) ktpData.get("tempatLahir"));
+            
+            // Parse tanggal lahir
+            String tanggalLahirStr = (String) ktpData.get("tanggalLahir");
+            if (tanggalLahirStr != null) {
+                customer.setTanggalLahir(java.time.LocalDate.parse(tanggalLahirStr));
+            } else {
+                customer.setTanggalLahir(request.getTanggalLahir());
+            }
+            
+            customer.setJenisKelamin((String) ktpData.get("jenisKelamin"));
+            customer.setAgama((String) ktpData.get("agama"));
+        } else {
+            // Fallback ke data dari form jika KTP data tidak ada
+            customer.setNamaLengkap(request.getNamaLengkap());
+            customer.setTempatLahir(request.getTempatLahir());
+            customer.setTanggalLahir(request.getTanggalLahir());
+            customer.setJenisKelamin(request.getJenisKelamin());
+            customer.setAgama(request.getAgama());
+        }
+        
+        // Data dari form registrasi
         customer.setNik(request.getNik());
         customer.setNamaIbuKandung(request.getNamaIbuKandung());
         customer.setNomorTelepon(request.getNomorTelepon());
         customer.setEmail(request.getEmail().toLowerCase());
         customer.setPassword(passwordEncoder.encode(request.getPassword()));
         customer.setTipeAkun(request.getTipeAkun());
-        
-        // Auto-fill dari data KTP
-        customer.setTempatLahir(ktpData.getTempatLahir());
-        customer.setTanggalLahir(ktpData.getTanggalLahir());
-        customer.setJenisKelamin(ktpData.getJenisKelamin().getValue());
-        customer.setAgama(ktpData.getAgama().getValue());
-        
         customer.setStatusPernikahan(request.getStatusPernikahan());
         customer.setPekerjaan(request.getPekerjaan());
         customer.setSumberPenghasilan(request.getSumberPenghasilan());
@@ -88,7 +104,7 @@ public class RegistrationService {
         customer.setKodeRekening(request.getKodeRekening());
         customer.setEmailVerified(false);
         
-        // Buat alamat
+        // 7. BUAT ALAMAT
         Alamat alamat = new Alamat();
         alamat.setNamaAlamat(request.getAlamat().getNamaAlamat());
         alamat.setProvinsi(request.getAlamat().getProvinsi());
@@ -97,7 +113,7 @@ public class RegistrationService {
         alamat.setKelurahan(request.getAlamat().getKelurahan());
         alamat.setKodePos(request.getAlamat().getKodePos());
         
-        // Buat wali
+        // 8. BUAT WALI
         Wali wali = new Wali();
         wali.setJenisWali(request.getWali().getJenisWali());
         wali.setNamaLengkapWali(request.getWali().getNamaLengkapWali());
@@ -113,49 +129,17 @@ public class RegistrationService {
     }
     
     /**
-     * Validasi data tambahan sesuai KTP (warning saja, tidak error)
+     * Validasi NIK dan nama via Dukcapil service (untuk preview)
      */
-    private void validateAdditionalKtpData(RegistrationRequest request, KtpDukcapil ktpData) {
-        // Cek tanggal lahir
-        if (!ktpData.getTanggalLahir().equals(request.getTanggalLahir())) {
-            System.out.println("⚠️ Warning: Tanggal lahir tidak sesuai KTP. " +
-                "KTP: " + ktpData.getTanggalLahir() + 
-                ", Input: " + request.getTanggalLahir());
-        }
-        
-        // Cek tempat lahir
-        if (!ktpData.getTempatLahir().equalsIgnoreCase(request.getTempatLahir())) {
-            System.out.println("⚠️ Warning: Tempat lahir tidak sesuai KTP. " +
-                "KTP: " + ktpData.getTempatLahir() + 
-                ", Input: " + request.getTempatLahir());
-        }
-        
-        // Cek jenis kelamin
-        if (!ktpData.getJenisKelamin().getValue().equalsIgnoreCase(request.getJenisKelamin())) {
-            System.out.println("⚠️ Warning: Jenis kelamin tidak sesuai KTP. " +
-                "KTP: " + ktpData.getJenisKelamin().getValue() + 
-                ", Input: " + request.getJenisKelamin());
-        }
+    public DukcapilResponseDto validateNikAndName(String nik, String namaLengkap) {
+        return dukcapilClientService.verifyNikAndName(nik, namaLengkap);
     }
     
     /**
-     * Get data KTP untuk preview sebelum registrasi
+     * Check NIK existence via Dukcapil service
      */
-    public Optional<KtpDukcapil> getKtpData(String nik) {
-        return ktpDukcapilRepository.findByNik(nik);
-    }
-    
-    /**
-     * Validasi NIK dan nama sebelum registrasi
-     */
-    public boolean validateNikAndName(String nik, String namaLengkap) {
-        Optional<KtpDukcapil> ktpOpt = ktpDukcapilRepository.findByNik(nik);
-        if (ktpOpt.isEmpty()) {
-            return false;
-        }
-        
-        KtpDukcapil ktpData = ktpOpt.get();
-        return ktpData.getNamaLengkap().equalsIgnoreCase(namaLengkap);
+    public boolean checkNikExists(String nik) {
+        return dukcapilClientService.isNikExists(nik);
     }
     
     public String authenticateCustomer(String email, String password) {
@@ -246,28 +230,34 @@ public class RegistrationService {
         private final long totalCustomers;
         private final long verifiedCustomers;
         private final double verificationRate;
-        private final long totalKtpRecords;
+        private final boolean dukcapilServiceAvailable;
+        private final String dukcapilServiceUrl;
         
-        public RegistrationStats(long totalCustomers, long verifiedCustomers, double verificationRate, long totalKtpRecords) {
+        public RegistrationStats(long totalCustomers, long verifiedCustomers, double verificationRate, 
+                               boolean dukcapilServiceAvailable, String dukcapilServiceUrl) {
             this.totalCustomers = totalCustomers;
             this.verifiedCustomers = verifiedCustomers;
             this.verificationRate = verificationRate;
-            this.totalKtpRecords = totalKtpRecords;
+            this.dukcapilServiceAvailable = dukcapilServiceAvailable;
+            this.dukcapilServiceUrl = dukcapilServiceUrl;
         }
         
         public long getTotalCustomers() { return totalCustomers; }
         public long getVerifiedCustomers() { return verifiedCustomers; }
         public double getVerificationRate() { return verificationRate; }
-        public long getTotalKtpRecords() { return totalKtpRecords; }
+        public boolean isDukcapilServiceAvailable() { return dukcapilServiceAvailable; }
+        public String getDukcapilServiceUrl() { return dukcapilServiceUrl; }
     }    
     
     public RegistrationStats getRegistrationStats() {
         long totalCustomers = customerRepository.countTotalCustomers();
         long verifiedCustomers = customerRepository.countVerifiedCustomers();
-        long totalKtpRecords = ktpDukcapilRepository.count();
         double verificationRate = totalCustomers > 0 ? 
             (double) verifiedCustomers / totalCustomers * 100 : 0;
+        boolean dukcapilAvailable = dukcapilClientService.isDukcapilServiceHealthy();
+        String dukcapilUrl = dukcapilClientService.getDukcapilBaseUrl();
             
-        return new RegistrationStats(totalCustomers, verifiedCustomers, verificationRate, totalKtpRecords);
+        return new RegistrationStats(totalCustomers, verifiedCustomers, verificationRate, 
+                                   dukcapilAvailable, dukcapilUrl);
     }
 }

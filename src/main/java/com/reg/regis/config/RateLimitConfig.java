@@ -19,10 +19,10 @@ public class RateLimitConfig implements HandlerInterceptor {
     @Value("${app.rateLimit.enabled:true}")
     private boolean rateLimitEnabled;
     
-    @Value("${app.rateLimit.capacity:5}")
+    @Value("${app.rateLimit.capacity:10}")
     private long capacity;
     
-    @Value("${app.rateLimit.refillRate:1}")
+    @Value("${app.rateLimit.refillRate:2}")
     private long refillRate;
     
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
@@ -46,7 +46,6 @@ public class RateLimitConfig implements HandlerInterceptor {
             try {
                 response.getWriter().write("{\"error\":\"Too many requests. Please try again later.\"}");
             } catch (Exception e) {
-                // Log error if needed
                 System.err.println("Error writing rate limit response: " + e.getMessage());
             }
             return false;

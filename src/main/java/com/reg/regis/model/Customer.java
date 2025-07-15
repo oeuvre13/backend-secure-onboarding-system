@@ -13,7 +13,6 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // Data Pribadi
     @NotBlank(message = "Nama lengkap wajib diisi")
     @Column(name = "nama_lengkap", nullable = false)
     private String namaLengkap;
@@ -30,7 +29,7 @@ public class Customer {
     
     @NotBlank(message = "Nomor telepon wajib diisi")
     @Pattern(regexp = "^08[0-9]{8,11}$", message = "Format nomor telepon tidak valid")
-    @Column(name = "nomor_telepon", nullable = false)
+    @Column(name = "nomor_telepon", nullable = false, unique = true)
     private String nomorTelepon;
     
     @NotBlank(message = "Email wajib diisi")
@@ -39,7 +38,6 @@ public class Customer {
     private String email;
     
     @NotBlank(message = "Password wajib diisi")
-    @Size(min = 8, message = "Password minimal 8 karakter")
     @Column(nullable = false)
     private String password;
     
@@ -87,7 +85,6 @@ public class Customer {
     @Column(name = "kode_rekening", nullable = false)
     private Integer kodeRekening;
     
-    // System fields
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -97,7 +94,6 @@ public class Customer {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
     
-    // Relasi
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "alamat_id")
     private Alamat alamat;
