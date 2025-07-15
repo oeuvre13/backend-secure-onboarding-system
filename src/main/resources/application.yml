@@ -6,27 +6,27 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/customer_registration
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    # driver-class-name: org.postgresql.Driver
   
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+  # jpa:
+  #   database-platform: org.hibernate.dialect.PostgreSQLDialect
+  #   hibernate:
+  #     ddl-auto: validate
+  #   show-sql: true
+  #   properties:
+  #     hibernate:
+  #       format_sql: true
 
 app:
   cors:
     allowed-origins: http://localhost:3000,http://localhost:5173,https://rank-aspect-strange-navigator.trycloudflare.com
   
   jwt:
-    secret: your-super-secret-jwt-key-change-this-in-production
-    expiration: 86400000  # 24 hours
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}  # 24 hours
   
   rateLimit:
     enabled: true
