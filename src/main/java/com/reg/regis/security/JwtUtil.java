@@ -39,13 +39,17 @@ public class JwtUtil {
      * Extract email from token
      */
     public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        
-        return claims.getSubject();
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            return claims.getSubject();
+        } catch (JwtException e) {
+            return null;
+        }
     }
     
     /**
@@ -78,18 +82,5 @@ public class JwtUtil {
         } catch (JwtException e) {
             return true;
         }
-    }
-    
-    /**
-     * Get token expiration time
-     */
-    public Date getExpirationFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        
-        return claims.getExpiration();
     }
 }
