@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/registration")  // ← UBAH DARI /auth KE /registration
+@RequestMapping("/registration") 
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class RegistrationController {
     
