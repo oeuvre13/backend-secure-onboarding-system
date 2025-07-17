@@ -124,7 +124,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
     "email": "john.doe@example.com",
     "password": "JohnDoe123!",
     "tipeAkun": "BNI Taplus",
-    "jenisKartu": "Silver",
+    "jenisKartu": "Gold",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
@@ -134,7 +134,6 @@ curl -X POST "http://localhost:8080/api/registration/register" \
     "sumberPenghasilan": "Gaji",
     "rentangGaji": "5-10 juta",
     "tujuanPembuatanRekening": "Tabungan",
-    "kodeRekening": 1001,
     "alamat": {
       "namaAlamat": "Jl. Sudirman No. 123, RT 001/RW 002",
       "provinsi": "DKI Jakarta",

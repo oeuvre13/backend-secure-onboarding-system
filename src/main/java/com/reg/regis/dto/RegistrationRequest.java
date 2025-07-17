@@ -32,8 +32,7 @@ public class RegistrationRequest {
     @NotBlank(message = "Tipe akun wajib diisi")
     private String tipeAkun;
     
-    // NEW FIELD: jenisKartu dengan default value
-    private String jenisKartu = "Silver";
+    private String jenisKartu;
     
     @NotBlank(message = "Tempat lahir wajib diisi")
     private String tempatLahir;

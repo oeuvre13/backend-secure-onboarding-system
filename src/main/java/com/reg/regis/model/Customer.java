@@ -103,7 +103,6 @@ public class Customer {
     @JoinColumn(name = "alamat_id")
     private Alamat alamat;
     
-    // UPDATED: Wali sekarang OPTIONAL (nullable = true)
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "wali_id", nullable = true)
     private Wali wali;
