@@ -1,6 +1,5 @@
 package com.reg.regis.service;
 
-import com.reg.regis.dto.DukcapilRequestDto;
 import com.reg.regis.dto.DukcapilResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +10,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,21 +30,24 @@ public class DukcapilClientService {
     private String checkNikEndpoint;
     
     /**
-     * Verifikasi NIK dan nama lengkap via Dukcapil Service
+     * Verifikasi NIK, nama lengkap, dan tanggal lahir via Dukcapil Service
      */
-    public DukcapilResponseDto verifyNikAndName(String nik, String namaLengkap) {
+    public DukcapilResponseDto verifyNikNameAndBirthDate(String nik, String namaLengkap, LocalDate tanggalLahir) {
         try {
             String url = dukcapilBaseUrl + verifyNikEndpoint;
             
-            // Prepare request
-            DukcapilRequestDto request = new DukcapilRequestDto(nik, namaLengkap);
+            // Prepare request dengan SEMUA field yang dibutuhkan Dukcapil
+            Map<String, Object> request = new HashMap<>();
+            request.put("nik", nik);
+            request.put("namaLengkap", namaLengkap);
+            request.put("tanggalLahir", tanggalLahir.toString()); // Format: yyyy-MM-dd
             
             // Set headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("User-Agent", "Customer-Service/1.0");
             
-            HttpEntity<DukcapilRequestDto> entity = new HttpEntity<>(request, headers);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
             
             System.out.println("🌐 Calling Dukcapil Service: " + url);
             System.out.println("📤 Request: " + request);
