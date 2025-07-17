@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/registration") 
+@RequestMapping("/auth") 
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class RegistrationController {
     
@@ -27,7 +27,7 @@ public class RegistrationController {
      * - Email tidak boleh duplikat
      * - Nomor HP tidak boleh duplikat
      */
-    @PostMapping("/register")  // ← Sekarang jadi POST /registration/register
+    @PostMapping("/register")  // ← Sekarang jadi POST /auth/register
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegistrationRequest request, HttpServletResponse response) {
         try {
             Customer customer = registrationService.registerCustomer(request);
@@ -68,7 +68,7 @@ public class RegistrationController {
     /**
      * Check password strength
      */
-    @PostMapping("/check-password")  // ← POST /registration/check-password
+    @PostMapping("/check-password")  // ← POST /auth/check-password
     public ResponseEntity<?> checkPasswordStrength(@RequestBody Map<String, String> request) {
         String password = request.get("password");
         String strength = registrationService.checkPasswordStrength(password);
@@ -79,7 +79,7 @@ public class RegistrationController {
     /**
      * Validate NIK format
      */
-    @PostMapping("/validate-nik")  // ← POST /registration/validate-nik
+    @PostMapping("/validate-nik")  // ← POST /auth/validate-nik
     public ResponseEntity<?> validateNik(@RequestBody Map<String, String> request) {
         try {
             String nik = request.get("nik");
@@ -103,7 +103,7 @@ public class RegistrationController {
     /**
      * Verify email customer
      */
-    @PostMapping("/verify-email")  // ← POST /registration/verify-email
+    @PostMapping("/verify-email")  // ← POST /auth/verify-email
     public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -119,7 +119,7 @@ public class RegistrationController {
     /**
      * Get registration statistics
      */
-    @GetMapping("/stats")  // ← GET /registration/stats
+    @GetMapping("/stats")  // ← GET /auth/stats
     public ResponseEntity<?> getRegistrationStats() {
         return ResponseEntity.ok(registrationService.getRegistrationStats());
     }
@@ -127,7 +127,7 @@ public class RegistrationController {
     /**
      * Health check endpoint
      */
-    @GetMapping("/health")  // ← GET /registration/health
+    @GetMapping("/health")  // ← GET /auth/health
     public ResponseEntity<?> healthCheck() {
         var stats = registrationService.getRegistrationStats();
         
@@ -145,13 +145,13 @@ public class RegistrationController {
                 "verificationRate", stats.getVerificationRate() + "%"
             ),
             "endpoints", Map.of(
-                "register", "POST /registration/register",
-                "checkPassword", "POST /registration/check-password",
-                "validateNik", "POST /registration/validate-nik",
-                "verifyEmail", "POST /registration/verify-email",
-                "stats", "GET /registration/stats",
-                "health", "GET /registration/health",
-                "profile", "GET /registration/profile"
+                "register", "POST /auth/register",
+                "checkPassword", "POST /auth/check-password",
+                "validateNik", "POST /auth/validate-nik",
+                "verifyEmail", "POST /auth/verify-email",
+                "stats", "GET /auth/stats",
+                "health", "GET /auth/health",
+                "profile", "GET /auth/profile"
             )
         ));
     }
@@ -159,7 +159,7 @@ public class RegistrationController {
     /**
      * Get customer profile  
      */
-    @GetMapping("/profile")  // ← GET /registration/profile
+    @GetMapping("/profile")  // ← GET /auth/profile
     public ResponseEntity<?> getCustomerProfile(@CookieValue(value = "authToken", required = false) String token) {
         try {
             if (token == null || token.isEmpty()) {

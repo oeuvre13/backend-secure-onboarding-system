@@ -20,7 +20,7 @@
 
 ## 1. REGISTRATION MANAGEMENT (`/api/registration`) 📝
 
-### 🏥 **GET** `/api/registration/health`
+### 🏥 **GET** `/api/auth/health`
 Health check untuk registration service
 
 #### Response (200)
@@ -39,20 +39,20 @@ Health check untuk registration service
     "verificationRate": "90%"
   },
   "endpoints": {
-    "register": "POST /registration/register",
-    "checkPassword": "POST /registration/check-password",
-    "validateNik": "POST /registration/validate-nik",
-    "verifyEmail": "POST /registration/verify-email",
-    "stats": "GET /registration/stats",
-    "health": "GET /registration/health",
-    "profile": "GET /registration/profile"
+    "register": "POST /auth/register",
+    "checkPassword": "POST /auth/check-password",
+    "validateNik": "POST /auth/validate-nik",
+    "verifyEmail": "POST /auth/verify-email",
+    "stats": "GET /auth/stats",
+    "health": "GET /auth/health",
+    "profile": "GET /auth/profile"
   }
 }
 ```
 
 ---
 
-### 📝 **POST** `/api/registration/register` ⭐ **MAIN ENDPOINT**
+### 📝 **POST** `/api/auth/register` ⭐ **MAIN ENDPOINT**
 Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
 #### Request Body
@@ -146,7 +146,7 @@ Set-Cookie: authToken=<jwt-token>; HttpOnly; Path=/; Max-Age=86400; Domain=local
 
 ---
 
-### 🔑 **POST** `/api/registration/check-password`
+### 🔑 **POST** `/api/auth/check-password`
 Check password strength
 
 #### Request Body
@@ -165,7 +165,7 @@ Check password strength
 
 ---
 
-### ✅ **POST** `/api/registration/validate-nik`
+### ✅ **POST** `/api/auth/validate-nik`
 Validasi format NIK
 
 #### Request Body
@@ -186,7 +186,7 @@ Validasi format NIK
 
 ---
 
-### 📧 **POST** `/api/registration/verify-email`
+### 📧 **POST** `/api/auth/verify-email`
 Verify customer email
 
 #### Request Body
@@ -205,7 +205,7 @@ Verify customer email
 
 ---
 
-### 📊 **GET** `/api/registration/stats`
+### 📊 **GET** `/api/auth/stats`
 Registration statistics
 
 #### Response (200)
@@ -221,7 +221,7 @@ Registration statistics
 
 ---
 
-### 👤 **GET** `/api/registration/profile`
+### 👤 **GET** `/api/auth/profile`
 Get customer profile (requires authentication)
 
 #### Headers
@@ -569,13 +569,13 @@ Verification statistics
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
 | **Registration Management** |
-| GET | `/api/registration/health` | Health check | ❌ |
-| POST | `/api/registration/register` | Customer registration + auto login | ❌ |
-| POST | `/api/registration/check-password` | Password strength check | ❌ |
-| POST | `/api/registration/validate-nik` | NIK format validation | ❌ |
-| POST | `/api/registration/verify-email` | Email verification | ❌ |
-| GET | `/api/registration/stats` | Registration statistics | ❌ |
-| GET | `/api/registration/profile` | Customer profile | ✅ |
+| GET | `/api/auth/health` | Health check | ❌ |
+| POST | `/api/auth/register` | Customer registration + auto login | ❌ |
+| POST | `/api/auth/check-password` | Password strength check | ❌ |
+| POST | `/api/auth/validate-nik` | NIK format validation | ❌ |
+| POST | `/api/auth/verify-email` | Email verification | ❌ |
+| GET | `/api/auth/stats` | Registration statistics | ❌ |
+| GET | `/api/auth/profile` | Customer profile | ✅ |
 | **Authentication** |
 | POST | `/api/auth/login` | Customer login | ❌ |
 | GET | `/api/auth/me` | Current user info | ✅ |

@@ -11,7 +11,7 @@
 ### 1. Health Checks
 ```bash
 echo "📊 Health Checks:"
-curl -X GET "http://localhost:8080/api/registration/health" | jq
+curl -X GET "http://localhost:8080/api/auth/health" | jq
 curl -X GET "http://localhost:8080/api/auth/health" | jq  
 curl -X GET "http://localhost:8080/api/verification/health" | jq
 ```
@@ -100,12 +100,12 @@ curl -X POST "http://localhost:8080/api/verification/phone" \
 ### 5. Validation Tests
 ```bash
 echo "✅ NIK Format Validation:"
-curl -X POST "http://localhost:8080/api/registration/validate-nik" \
+curl -X POST "http://localhost:8080/api/auth/validate-nik" \
   -H "Content-Type: application/json" \
   -d '{"nik": "3175031234567890"}' | jq
 
 echo "🔒 Password Strength Check:"
-curl -X POST "http://localhost:8080/api/registration/check-password" \
+curl -X POST "http://localhost:8080/api/auth/check-password" \
   -H "Content-Type: application/json" \
   -d '{"password": "JohnDoe123!"}' | jq
 ```
@@ -113,7 +113,7 @@ curl -X POST "http://localhost:8080/api/registration/check-password" \
 ### 6. Customer Registration (Main Test)
 ```bash
 echo "👤 Registration Test - John Doe:"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -152,7 +152,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
   }' | jq
 
 echo "👤 Registration Test - Jane Smith:"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -194,11 +194,11 @@ curl -X POST "http://localhost:8080/api/registration/register" \
 ### 7. Profile Access (Auto-login test)
 ```bash
 echo "👤 John Profile (using auto-login cookie):"
-curl -X GET "http://localhost:8080/api/registration/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
 
 echo "👤 Jane Profile (using auto-login cookie):"
-curl -X GET "http://localhost:8080/api/registration/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
 ```
 
@@ -245,7 +245,7 @@ curl -X POST "http://localhost:8080/api/auth/logout" \
 ### 10. Statistics
 ```bash
 echo "📊 Statistics:"
-curl -X GET "http://localhost:8080/api/registration/stats" | jq
+curl -X GET "http://localhost:8080/api/auth/stats" | jq
 curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ```
 
@@ -275,7 +275,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ## 📋 **Collection Structure**
 
 ### **1. Health Checks**
-- **GET** `{{base_url}}/registration/health`
+- **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/verification/health`
 
@@ -283,7 +283,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Register Customer**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/register`
+- **URL:** `{{base_url}}/auth/register`
 - **Headers:**
   ```
   Content-Type: application/json
@@ -328,7 +328,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Check Password Strength**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/check-password`
+- **URL:** `{{base_url}}/auth/check-password`
 - **Body:**
   ```json
   {
@@ -338,7 +338,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Validate NIK**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/validate-nik`
+- **URL:** `{{base_url}}/auth/validate-nik`
 - **Body:**
   ```json
   {
@@ -348,7 +348,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Verify Email**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/verify-email`
+- **URL:** `{{base_url}}/auth/verify-email`
 - **Body:**
   ```json
   {
@@ -358,12 +358,12 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Get Profile**
 - **Method:** GET
-- **URL:** `{{base_url}}/registration/profile`
+- **URL:** `{{base_url}}/auth/profile`
 - **Headers:** *Cookie akan diatur otomatis*
 
 #### **Registration Stats**
 - **Method:** GET
-- **URL:** `{{base_url}}/registration/stats`
+- **URL:** `{{base_url}}/auth/stats`
 
 ### **3. Authentication**
 
@@ -565,7 +565,7 @@ pm.test("Auth cookie is set", function () {
 echo "🚀 COMPLETE HAPPY PATH TEST"
 
 # 1. Health Check
-curl -X GET "http://localhost:8080/api/registration/health"
+curl -X GET "http://localhost:8080/api/auth/health"
 
 # 2. NIK Verification
 curl -X POST "http://localhost:8080/api/verification/nik" \
@@ -578,13 +578,13 @@ curl -X POST "http://localhost:8080/api/verification/email" \
   -d '{"email":"john.doe.test@example.com"}'
 
 # 4. Register Customer
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c test_cookies.txt \
   -d '{ ... complete registration data ... }'
 
 # 5. Access Profile (auto-login)
-curl -X GET "http://localhost:8080/api/registration/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
   -b test_cookies.txt
 
 # 6. Manual Login Test
@@ -616,7 +616,7 @@ curl -X POST "http://localhost:8080/api/verification/nik" \
   -d '{"nik":"3175031234567890","namaLengkap":"Wrong Name","tanggalLahir":"1990-05-15"}'
 
 # 3. Duplicate Email Registration
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{"email":"john.doe@example.com", ... }'
 
@@ -626,7 +626,7 @@ curl -X POST "http://localhost:8080/api/auth/login" \
   -d '{"email":"john.doe@example.com","password":"WrongPassword"}'
 
 # 5. Access without Auth
-curl -X GET "http://localhost:8080/api/registration/profile"
+curl -X GET "http://localhost:8080/api/auth/profile"
 
 echo "❌ Error tests completed!"
 ```
@@ -639,7 +639,7 @@ echo "📊 LOAD TEST - Multiple Requests"
 # Test health endpoint dengan multiple requests
 for i in {1..10}; do
   echo "Request $i:"
-  curl -X GET "http://localhost:8080/api/registration/health" \
+  curl -X GET "http://localhost:8080/api/auth/health" \
     -w "Time: %{time_total}s, Status: %{http_code}\n" \
     -s -o /dev/null
 done
@@ -683,7 +683,7 @@ cat cookies.txt
 ### **2. CORS Issues**
 ```bash
 # Test CORS with OPTIONS request
-curl -X OPTIONS "http://localhost:8080/api/registration/register" \
+curl -X OPTIONS "http://localhost:8080/api/auth/register" \
   -H "Origin: http://localhost:3000" \
   -H "Access-Control-Request-Method: POST" \
   -H "Access-Control-Request-Headers: Content-Type" \
@@ -693,12 +693,12 @@ curl -X OPTIONS "http://localhost:8080/api/registration/register" \
 ### **3. JSON Validation**
 ```bash
 # Test with invalid JSON
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{"namaLengkap":"Test"' # Invalid JSON
 
 # Test with missing required fields
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{"namaLengkap":"Test Only"}'
 ```
@@ -706,7 +706,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
 ### **4. Connection Test**
 ```bash
 # Test service connectivity
-curl -X GET "http://localhost:8080/api/registration/health" \
+curl -X GET "http://localhost:8080/api/auth/health" \
   --connect-timeout 5 \
   --max-time 10 \
   -v
