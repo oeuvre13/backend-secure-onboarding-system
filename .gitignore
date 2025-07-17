@@ -34,3 +34,6 @@ build/
 
 ### Environment Variables ###
 .env
+
+### cookies ###
+cookies.txt
