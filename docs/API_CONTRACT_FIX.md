@@ -1,6 +1,7 @@
 # 📄 API Contract - Customer Registration Service
 
 ## Service Information
+
 - **Service Name:** Customer Registration Service dengan Dukcapil Integration
 - **Version:** 1.0.0
 - **Base URL:** `http://localhost:8080/api`
@@ -9,21 +10,25 @@
 - **Authentication:** Cookie-based (HTTP-only cookies)
 
 ## 🎯 Service Architecture
+
 3 Controller dengan endpoint yang berbeda:
-1. **`/api/registration`** - Registration Management
-2. **`/api/auth`** - Authentication & Login  
-3. **`/api/verification`** - NIK & Data Verification
+
+1. **`/api/auth`** - Authentication Management : Register & Login  
+2. **`/api/verification`** - NIK & Data Verification
 
 ---
 
 # 📋 API Endpoints
 
-## 1. REGISTRATION MANAGEMENT (`/api/registration`) 📝
+## 1. REGISTRATION MANAGEMENT (`/api/auth`) 📝
+
+### 🏥 **GET** `/api/auth/health`
 
 ### 🏥 **GET** `/api/auth/health`
 Health check untuk registration service
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "status": "OK",
@@ -50,6 +55,13 @@ Health check untuk registration service
   "jenisKartu": {
     "available": ["Silver", "Gold", "Platinum", "Batik Air"],
     "description": "Available card types for customer registration"
+    "register": "POST /auth/register",
+    "checkPassword": "POST /auth/check-password",
+    "validateNik": "POST /auth/validate-nik",
+    "verifyEmail": "POST /auth/verify-email",
+    "stats": "GET /auth/stats",
+    "health": "GET /auth/health",
+    "profile": "GET /auth/profile"
   }
 }
 ```
@@ -57,9 +69,11 @@ Health check untuk registration service
 ---
 
 ### 📝 **POST** `/api/auth/register` ⭐ **MAIN ENDPOINT**
+
 Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
-#### Request Body - **UPDATED dengan JenisKartu**
+- **Request**
+
 ```json
 {
   "namaLengkap": "John Doe",
@@ -158,6 +172,7 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 ```
 
 **Set-Cookie Header:**
+
 ```
 Set-Cookie: authToken=<jwt-token>; HttpOnly; Path=/; Max-Age=86400; Domain=localhost
 ```
@@ -167,14 +182,16 @@ Set-Cookie: authToken=<jwt-token>; HttpOnly; Path=/; Max-Age=86400; Domain=local
 ### 🔑 **POST** `/api/auth/check-password`
 Check password strength
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "password": "Password123!"
 }
 ```
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "strength": "STRONG"
@@ -186,14 +203,16 @@ Check password strength
 ### ✅ **POST** `/api/auth/validate-nik`
 Validasi format NIK
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "nik": "3175031234567890"
 }
 ```
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "valid": true,
@@ -207,14 +226,16 @@ Validasi format NIK
 ### 📧 **POST** `/api/auth/verify-email`
 Verify customer email
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "email": "john.doe@example.com"
 }
 ```
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "message": "Email berhasil diverifikasi"
@@ -226,7 +247,8 @@ Verify customer email
 ### 📊 **GET** `/api/auth/stats`
 Registration statistics - **UPDATED dengan JenisKartu breakdown**
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "totalCustomers": 150,
@@ -250,11 +272,13 @@ Registration statistics - **UPDATED dengan JenisKartu breakdown**
 Get customer profile (requires authentication) - **UPDATED**
 
 #### Headers
+
 ```
 Cookie: authToken=<jwt-token>
 ```
 
 #### Success Response (200)
+
 ```json
 {
   "profile": {
@@ -295,9 +319,11 @@ Cookie: authToken=<jwt-token>
 ## 2. AUTHENTICATION (`/api/auth`) 🔐
 
 ### 🔐 **POST** `/api/auth/login` ⭐ **MAIN ENDPOINT**
+
 Customer login dengan email dan password
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "email": "john.doe@example.com",
@@ -342,6 +368,7 @@ Customer login dengan email dan password
 ```
 
 #### Failed Response (400)
+
 ```json
 {
   "error": "Email atau password tidak valid"
@@ -354,11 +381,13 @@ Customer login dengan email dan password
 Get current authenticated user - **UPDATED**
 
 #### Headers
+
 ```
 Cookie: authToken=<jwt-token>
 ```
 
 #### Success Response (200)
+
 ```json
 {
   "authenticated": true,
@@ -391,9 +420,11 @@ Cookie: authToken=<jwt-token>
 ---
 
 ### 🚪 **POST** `/api/auth/logout`
+
 Logout user (clear cookie)
 
-#### Response (200) + Clear-Cookie
+- **Response (200)** + Clear-Cookie
+
 ```json
 {
   "message": "Logout berhasil"
@@ -403,14 +434,17 @@ Logout user (clear cookie)
 ---
 
 ### 🔄 **POST** `/api/auth/refresh-token`
+
 Refresh JWT token
 
 #### Headers
+
 ```
 Cookie: authToken=<jwt-token>
 ```
 
 #### Success Response (200) + Set-Cookie
+
 ```json
 {
   "message": "Token berhasil diperbarui"
@@ -420,14 +454,17 @@ Cookie: authToken=<jwt-token>
 ---
 
 ### ✅ **GET** `/api/auth/check-auth`
+
 Check authentication status
 
 #### Headers
+
 ```
 Cookie: authToken=<jwt-token>
 ```
 
 #### Authenticated Response (200)
+
 ```json
 {
   "authenticated": true,
@@ -437,6 +474,7 @@ Cookie: authToken=<jwt-token>
 ```
 
 #### Not Authenticated Response (200)
+
 ```json
 {
   "authenticated": false
@@ -448,9 +486,11 @@ Cookie: authToken=<jwt-token>
 ## 3. VERIFICATION SERVICE (`/api/verification`) 🔍
 
 ### 🏥 **GET** `/api/verification/health`
+
 Health check verification service
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "status": "OK",
@@ -469,9 +509,11 @@ Health check verification service
 ---
 
 ### 🔍 **POST** `/api/verification/nik` ⭐ **MAIN ENDPOINT**
+
 Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "nik": "3175031234567890",
@@ -481,6 +523,7 @@ Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 ```
 
 #### Success Response (200)
+
 ```json
 {
   "valid": true,
@@ -501,6 +544,7 @@ Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 ```
 
 #### Failed Response (200)
+
 ```json
 {
   "valid": false,
@@ -512,9 +556,11 @@ Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 ---
 
 ### 📧 **POST** `/api/verification/email`
+
 Verifikasi ketersediaan email
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "email": "user@example.com"
@@ -522,6 +568,7 @@ Verifikasi ketersediaan email
 ```
 
 #### Available Response (200)
+
 ```json
 {
   "available": true,
@@ -533,9 +580,11 @@ Verifikasi ketersediaan email
 ---
 
 ### 📱 **POST** `/api/verification/phone`
+
 Verifikasi ketersediaan nomor telepon
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "nomorTelepon": "081234567890"
@@ -543,6 +592,7 @@ Verifikasi ketersediaan nomor telepon
 ```
 
 #### Available Response (200)
+
 ```json
 {
   "available": true,
@@ -554,9 +604,11 @@ Verifikasi ketersediaan nomor telepon
 ---
 
 ### 🆔 **POST** `/api/verification/nik-check`
+
 Check NIK tanpa nama (simple check)
 
-#### Request Body
+- **Request**
+
 ```json
 {
   "nik": "3175031234567890"
@@ -564,6 +616,7 @@ Check NIK tanpa nama (simple check)
 ```
 
 #### Registered Response (200)
+
 ```json
 {
   "registered": true,
@@ -574,9 +627,11 @@ Check NIK tanpa nama (simple check)
 ---
 
 ### 📊 **GET** `/api/verification/stats`
+
 Verification statistics
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "totalNikChecks": 105,
@@ -624,6 +679,7 @@ Verification statistics
 ## 🔧 Configuration & Security
 
 ### Cookie Configuration
+
 - **Name:** `authToken`
 - **HttpOnly:** `true` (XSS protection)
 - **Secure:** `false` (development) / `true` (production)
@@ -639,6 +695,7 @@ Verification statistics
 - **Database Column:** `VARCHAR(20) NOT NULL`
 
 ### External Dependencies
+
 - **Dukcapil Service:** `http://localhost:8081` (NIK verification)
 - **Database:** PostgreSQL for customer data
 - **JWT:** Token-based authentication

@@ -12,6 +12,7 @@
 ```bash
 echo "📊 Health Checks:"
 curl -X GET "http://localhost:8080/api/auth/health" | jq
+curl -X GET "http://localhost:8080/api/auth/health" | jq
 curl -X GET "http://localhost:8080/api/auth/health" | jq  
 curl -X GET "http://localhost:8080/api/verification/health" | jq
 ```
@@ -101,10 +102,12 @@ curl -X POST "http://localhost:8080/api/verification/phone" \
 ```bash
 echo "✅ NIK Format Validation:"
 curl -X POST "http://localhost:8080/api/auth/validate-nik" \
+curl -X POST "http://localhost:8080/api/auth/validate-nik" \
   -H "Content-Type: application/json" \
   -d '{"nik": "3175031234567890"}' | jq
 
 echo "🔒 Password Strength Check:"
+curl -X POST "http://localhost:8080/api/auth/check-password" \
 curl -X POST "http://localhost:8080/api/auth/check-password" \
   -H "Content-Type: application/json" \
   -d '{"password": "JohnDoe123!"}' | jq
@@ -274,6 +277,12 @@ curl -X POST "http://localhost:8080/api/auth/register" \
 
 ### 7. Profile Access (Auto-login test)
 ```bash
+echo "👤 John Profile (using auto-login cookie):"
+curl -X GET "http://localhost:8080/api/auth/profile" \
+  -b cookies.txt | jq
+
+echo "👤 Jane Profile (using auto-login cookie):"
+curl -X GET "http://localhost:8080/api/auth/profile" \
 echo "👤 Profile Access Tests:"
 curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
@@ -331,6 +340,7 @@ curl -X POST "http://localhost:8080/api/auth/logout" \
 ```bash
 echo "📊 Statistics:"
 curl -X GET "http://localhost:8080/api/auth/stats" | jq
+curl -X GET "http://localhost:8080/api/auth/stats" | jq
 curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ```
 
@@ -362,12 +372,14 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ### **1. Health Checks**
 - **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/auth/health`
+- **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/verification/health`
 
 ### **2. Registration - **UPDATED dengan JenisKartu**
 
 #### **Register Customer (KTP)**
 - **Method:** POST
+- **URL:** `{{base_url}}/auth/register`
 - **URL:** `{{base_url}}/auth/register`
 - **Headers:**
   ```

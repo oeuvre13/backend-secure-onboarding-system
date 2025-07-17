@@ -23,6 +23,7 @@ public class RegistrationAbsoluteApplication {
         System.out.println("");
         System.out.println("📊 Health Checks:");
         System.out.println("   http://localhost:8080/api/auth/health");
+        System.out.println("   http://localhost:8080/api/auth/health");
         System.out.println("   http://localhost:8080/api/verification/health");
         System.out.println("");
         System.out.println("🔗 Main Endpoints:");

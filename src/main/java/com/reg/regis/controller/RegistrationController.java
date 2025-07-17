@@ -14,6 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth") 
+@RequestMapping("/auth") 
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class RegistrationController {
     
@@ -27,7 +28,7 @@ public class RegistrationController {
      * - Email tidak boleh duplikat
      * - Nomor HP tidak boleh duplikat
      */
-    @PostMapping("/register")
+    @PostMapping("/register")  // ← Sekarang jadi POST /registration/register
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegistrationRequest request, HttpServletResponse response) {
         try {
             Customer customer = registrationService.registerCustomer(request);
@@ -68,7 +69,7 @@ public class RegistrationController {
     /**
      * Check password strength
      */
-    @PostMapping("/check-password")
+    @PostMapping("/check-password")  // ← POST /registration/check-password
     public ResponseEntity<?> checkPasswordStrength(@RequestBody Map<String, String> request) {
         String password = request.get("password");
         String strength = registrationService.checkPasswordStrength(password);
@@ -79,7 +80,7 @@ public class RegistrationController {
     /**
      * Validate NIK format
      */
-    @PostMapping("/validate-nik")
+    @PostMapping("/validate-nik")  // ← POST /registration/validate-nik
     public ResponseEntity<?> validateNik(@RequestBody Map<String, String> request) {
         try {
             String nik = request.get("nik");
@@ -103,7 +104,7 @@ public class RegistrationController {
     /**
      * Verify email customer
      */
-    @PostMapping("/verify-email")
+    @PostMapping("/verify-email")  // ← POST /registration/verify-email
     public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -119,7 +120,7 @@ public class RegistrationController {
     /**
      * Get registration statistics
      */
-    @GetMapping("/stats")
+    @GetMapping("/stats")  // ← GET /registration/stats
     public ResponseEntity<?> getRegistrationStats() {
         return ResponseEntity.ok(registrationService.getRegistrationStats());
     }
@@ -127,7 +128,7 @@ public class RegistrationController {
     /**
      * Health check endpoint
      */
-    @GetMapping("/health")
+    @GetMapping("/health")  // ← GET /registration/health
     public ResponseEntity<?> healthCheck() {
         var stats = registrationService.getRegistrationStats();
         
@@ -159,7 +160,7 @@ public class RegistrationController {
     /**
      * Get customer profile  
      */
-    @GetMapping("/profile")
+    @GetMapping("/profile")  // ← GET /registration/profile
     public ResponseEntity<?> getCustomerProfile(@CookieValue(value = "authToken", required = false) String token) {
         try {
             if (token == null || token.isEmpty()) {

@@ -1,3 +1,4 @@
+// src/main/java/com/reg/regis/controller/LoginController.java
 package com.reg.regis.controller;
 
 import com.reg.regis.model.Customer;
@@ -20,7 +21,7 @@ public class LoginController {
     private RegistrationService registrationService;
     
     /**
-     * Customer login dengan cookie-based auth
+     * Customer login dengan cookie-based auth dan mengembalikan Bearer Token
      */
     @PostMapping("/login")
     public ResponseEntity<?> loginCustomer(@RequestBody Map<String, String> loginRequest, HttpServletResponse response) {
@@ -28,7 +29,7 @@ public class LoginController {
             String email = loginRequest.get("email");
             String password = loginRequest.get("password");
             
-            String token = registrationService.authenticateCustomer(email, password);
+            String token = registrationService.authenticateCustomer(email, password); // Ini akan memanggil JwtUtil dari RegistrationService
             Optional<Customer> customerOpt = registrationService.getCustomerByEmail(email);
             
             if (customerOpt.isPresent()) {
@@ -37,15 +38,16 @@ public class LoginController {
                 // Set HTTP-only cookie
                 Cookie authCookie = new Cookie("authToken", token);
                 authCookie.setHttpOnly(true); // Prevent XSS attacks
-                authCookie.setSecure(false); // Set to true in production with HTTPS
+                authCookie.setSecure(false); // Set to true in production with HTTPS!
                 authCookie.setPath("/");
                 authCookie.setMaxAge(24 * 60 * 60); // 24 hours
-                authCookie.setDomain("localhost"); // Set domain for cookie
+                authCookie.setDomain("localhost"); // Set domain for cookie, sesuaikan untuk production
                 response.addCookie(authCookie);
                 
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("message", "Login berhasil");
                 responseData.put("customer", buildCustomerResponse(customer));
+                responseData.put("token", token); // Sertakan token dalam respons JSON
                 
                 return ResponseEntity.ok(responseData);
             }
@@ -58,19 +60,26 @@ public class LoginController {
     }
     
     /**
-     * Check auth status dari cookie
+     * Check auth status dari cookie atau header Authorization (Bearer Token)
      */
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@CookieValue(value = "authToken", required = false) String token) {
+    public ResponseEntity<?> getCurrentUser(@CookieValue(value = "authToken", required = false) String cookieToken,
+                                            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7); // Ambil token setelah "Bearer "
+        } else if (cookieToken != null && !cookieToken.isEmpty()) {
+            token = cookieToken; // Fallback ke cookie jika header tidak ada
+        }
+
         try {
             if (token == null || token.isEmpty()) {
-                return ResponseEntity.status(401).body(Map.of("error", "Tidak terautentikasi"));
+                return ResponseEntity.status(401).body(Map.of("error", "Tidak terautentikasi: Token tidak ditemukan"));
             }
             
-            // Validate token and get user
             String email = registrationService.getEmailFromToken(token);
             if (email == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid"));
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid atau kadaluarsa"));
             }
             
             Optional<Customer> customerOpt = registrationService.getCustomerByEmail(email);
@@ -87,41 +96,50 @@ public class LoginController {
             return ResponseEntity.status(401).body(Map.of("error", "User tidak ditemukan"));
             
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("error", "Autentikasi gagal"));
+            return ResponseEntity.status(401).body(Map.of("error", "Autentikasi gagal: " + e.getMessage()));
         }
     }
     
     /**
      * Logout - clear cookie
+     * (Untuk Bearer Token, logout di sisi klien hanya perlu menghapus token dari storage mereka)
      */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         // Clear the auth cookie
         Cookie authCookie = new Cookie("authToken", "");
         authCookie.setHttpOnly(true);
-        authCookie.setSecure(false);
+        authCookie.setSecure(false); // Ganti ke true di production dengan HTTPS!
         authCookie.setPath("/");
         authCookie.setMaxAge(0); // Expire immediately
-        authCookie.setDomain("localhost");
+        authCookie.setDomain("localhost"); // Sesuaikan untuk production
         response.addCookie(authCookie);
         
         return ResponseEntity.ok(Map.of("message", "Logout berhasil"));
     }
     
     /**
-     * Refresh JWT token
+     * Refresh JWT token dari cookie atau header Authorization
      */
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@CookieValue(value = "authToken", required = false) String token, HttpServletResponse response) {
+    public ResponseEntity<?> refreshToken(@CookieValue(value = "authToken", required = false) String cookieToken,
+                                          @RequestHeader(value = "Authorization", required = false) String authHeader,
+                                          HttpServletResponse response) {
+        String token = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (cookieToken != null && !cookieToken.isEmpty()) {
+            token = cookieToken;
+        }
+
         try {
             if (token == null || token.isEmpty()) {
                 return ResponseEntity.status(401).body(Map.of("error", "Token tidak ada"));
             }
             
-            // Validate current token
             String email = registrationService.getEmailFromToken(token);
             if (email == null) {
-                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid"));
+                return ResponseEntity.status(401).body(Map.of("error", "Token tidak valid atau kadaluarsa"));
             }
             
             // Generate new token (refresh tanpa password)
@@ -130,26 +148,35 @@ public class LoginController {
             // Set new cookie
             Cookie authCookie = new Cookie("authToken", newToken);
             authCookie.setHttpOnly(true);
-            authCookie.setSecure(false);
+            authCookie.setSecure(false); // Ganti ke true di production dengan HTTPS!
             authCookie.setPath("/");
             authCookie.setMaxAge(24 * 60 * 60); // 24 hours
-            authCookie.setDomain("localhost");
+            authCookie.setDomain("localhost"); // Sesuaikan untuk production
             response.addCookie(authCookie);
             
             return ResponseEntity.ok(Map.of(
-                "message", "Token berhasil diperbarui"
+                "message", "Token berhasil diperbarui",
+                "token", newToken // KEMBALIKAN TOKEN BARU DI RESPON JSON
             ));
             
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("error", "Refresh token gagal"));
+            return ResponseEntity.status(401).body(Map.of("error", "Refresh token gagal: " + e.getMessage()));
         }
     }
     
     /**
-     * Check if user is authenticated
+     * Check if user is authenticated (dari cookie atau header Authorization)
      */
     @GetMapping("/check-auth")
-    public ResponseEntity<?> checkAuthentication(@CookieValue(value = "authToken", required = false) String token) {
+    public ResponseEntity<?> checkAuthentication(@CookieValue(value = "authToken", required = false) String cookieToken,
+                                                  @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (cookieToken != null && !cookieToken.isEmpty()) {
+            token = cookieToken;
+        }
+
         try {
             if (token == null || token.isEmpty()) {
                 return ResponseEntity.ok(Map.of("authenticated", false));
