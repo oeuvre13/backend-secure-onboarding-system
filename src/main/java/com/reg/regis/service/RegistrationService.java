@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import java.util.Map;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 @Service
 public class RegistrationService {
@@ -28,6 +30,73 @@ public class RegistrationService {
     
     @Autowired
     private DukcapilClientService dukcapilClientService;
+    
+    // Static random untuk thread safety
+    private static final SecureRandom RANDOM = new SecureRandom();
+    
+    /**
+     * Generate kode rekening berdasarkan jenis kartu
+     * Format: [Prefix][YYMM][Random4Digit]
+     */
+    private Integer generateKodeRekening(String jenisKartu) {
+        if (jenisKartu == null || jenisKartu.trim().isEmpty()) {
+            jenisKartu = "Silver"; // Default
+        }
+        
+        // Prefix berdasarkan jenis kartu
+        int prefix = switch (jenisKartu) {
+            case "Silver" -> 10;
+            case "Gold" -> 20;
+            case "Platinum" -> 30;
+            case "Batik Air" -> 40;
+            default -> 10; // Default Silver
+        };
+        
+        // Year-Month (YYMM format)
+        LocalDateTime now = LocalDateTime.now();
+        int year = now.getYear() % 100; // Last 2 digits of year
+        int month = now.getMonthValue();
+        int yearMonth = year * 100 + month; // Format: YYMM
+        
+        // Random 4 digits (1000-9999)
+        int random4Digit = 1000 + RANDOM.nextInt(9000);
+        
+        // Gabungkan: prefix (2) + yearMonth (4) + random (4) = 10 digits
+        long accountCode = (long) prefix * 100000000L + (long) yearMonth * 10000L + random4Digit;
+        
+        return (int) (accountCode % Integer.MAX_VALUE);
+    }
+    
+    /**
+     * Generate kode rekening dengan collision detection
+     */
+    private Integer generateUniqueKodeRekening(String jenisKartu) {
+        Integer kodeRekening = generateKodeRekening(jenisKartu);
+        
+        // Check collision dan retry maksimal 5 kali
+        int attempts = 0;
+        while (customerRepository.existsByKodeRekening(kodeRekening) && attempts < 5) {
+            kodeRekening = generateKodeRekening(jenisKartu);
+            attempts++;
+        }
+        
+        // Jika masih collision setelah 5 kali, generate simple random
+        if (customerRepository.existsByKodeRekening(kodeRekening)) {
+            int prefix = switch (jenisKartu) {
+                case "Silver" -> 10;
+                case "Gold" -> 20;
+                case "Platinum" -> 30;
+                case "Batik Air" -> 40;
+                default -> 10;
+            };
+            
+            // Simple format: prefix + 6 random digits
+            int randomNumber = 100000 + RANDOM.nextInt(900000);
+            kodeRekening = prefix * 1000000 + randomNumber;
+        }
+        
+        return kodeRekening;
+    }
     
     @Transactional
     public Customer registerCustomer(RegistrationRequest request) {
@@ -62,7 +131,14 @@ public class RegistrationService {
             throw new RuntimeException("NIK " + request.getNik() + " sudah pernah digunakan untuk registrasi.");
         }
         
-        // 6. BUAT CUSTOMER BARU DENGAN DATA DARI DUKCAPIL
+        // 6. AUTO-GENERATE KODE REKENING JIKA BELUM ADA
+        if (request.getKodeRekening() == null) {
+            String jenisKartu = request.getJenisKartu() != null ? request.getJenisKartu() : "Silver";
+            Integer generatedCode = generateUniqueKodeRekening(jenisKartu);
+            request.setKodeRekening(generatedCode);
+        }
+        
+        // 7. BUAT CUSTOMER BARU DENGAN DATA DARI DUKCAPIL
         Customer customer = new Customer();
         Map<String, Object> ktpData = dukcapilResponse.getData();
         
@@ -102,10 +178,13 @@ public class RegistrationService {
         customer.setSumberPenghasilan(request.getSumberPenghasilan());
         customer.setRentangGaji(request.getRentangGaji());
         customer.setTujuanPembuatanRekening(request.getTujuanPembuatanRekening());
-        customer.setKodeRekening(request.getKodeRekening());
+        customer.setKodeRekening(request.getKodeRekening()); // Generated code
         customer.setEmailVerified(false);
         
-        // 7. BUAT ALAMAT
+        // Set jenisKartu
+        customer.setJenisKartu(request.getJenisKartu() != null ? request.getJenisKartu() : "Silver");
+        
+        // 8. BUAT ALAMAT
         Alamat alamat = new Alamat();
         alamat.setNamaAlamat(request.getAlamat().getNamaAlamat());
         alamat.setProvinsi(request.getAlamat().getProvinsi());
@@ -114,19 +193,27 @@ public class RegistrationService {
         alamat.setKelurahan(request.getAlamat().getKelurahan());
         alamat.setKodePos(request.getAlamat().getKodePos());
         
-        // 8. BUAT WALI
-        Wali wali = new Wali();
-        wali.setJenisWali(request.getWali().getJenisWali());
-        wali.setNamaLengkapWali(request.getWali().getNamaLengkapWali());
-        wali.setPekerjaanWali(request.getWali().getPekerjaanWali());
-        wali.setAlamatWali(request.getWali().getAlamatWali());
-        wali.setNomorTeleponWali(request.getWali().getNomorTeleponWali());
+        // 9. BUAT WALI (OPTIONAL)
+        Wali wali = null;
+        if (request.getWali() != null && request.getWali().isComplete()) {
+            wali = new Wali();
+            wali.setJenisWali(request.getWali().getJenisWali());
+            wali.setNamaLengkapWali(request.getWali().getNamaLengkapWali());
+            wali.setPekerjaanWali(request.getWali().getPekerjaanWali());
+            wali.setAlamatWali(request.getWali().getAlamatWali());
+            wali.setNomorTeleponWali(request.getWali().getNomorTeleponWali());
+        }
         
         // Set relasi
         customer.setAlamat(alamat);
-        customer.setWali(wali);
+        customer.setWali(wali);  // Bisa null
         
         return customerRepository.save(customer);
+    }
+    
+    // NEW: Method untuk check kode rekening exists (untuk repository)
+    public Optional<Customer> getCustomerByAccountCode(Integer kodeRekening) {
+        return customerRepository.findByKodeRekening(kodeRekening);
     }
     
     /**

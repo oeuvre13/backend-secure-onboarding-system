@@ -1,18 +1,17 @@
 package com.reg.regis.dto;
 
-import jakarta.validation.constraints.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public class RegistrationRequest {
     
-    // Data Pribadi
     @NotBlank(message = "Nama lengkap wajib diisi")
     private String namaLengkap;
     
     @NotBlank(message = "NIK wajib diisi")
     @Size(min = 16, max = 16, message = "NIK harus 16 digit")
-    @Pattern(regexp = "^[0-9]{16}$", message = "NIK hanya boleh berisi angka 16 digit")
+    @Pattern(regexp = "^[0-9]{16}$", message = "NIK hanya boleh berisi angka")
     private String nik;
     
     @NotBlank(message = "Nama ibu kandung wajib diisi")
@@ -32,6 +31,8 @@ public class RegistrationRequest {
     
     @NotBlank(message = "Tipe akun wajib diisi")
     private String tipeAkun;
+    
+    private String jenisKartu;
     
     @NotBlank(message = "Tempat lahir wajib diisi")
     private String tempatLahir;
@@ -60,103 +61,21 @@ public class RegistrationRequest {
     @NotBlank(message = "Tujuan pembuatan rekening wajib diisi")
     private String tujuanPembuatanRekening;
     
-    @NotNull(message = "Kode rekening wajib diisi")
+    // @NotNull(message = "Kode rekening wajib diisi")
     private Integer kodeRekening;
     
-    // Nested Objects
     @Valid
-    @NotNull(message = "Data alamat wajib diisi")
+    @NotNull(message = "Alamat wajib diisi")
     private AlamatRequest alamat;
     
+    // UPDATED: Wali sekarang OPTIONAL (bisa null)
     @Valid
-    @NotNull(message = "Data wali wajib diisi")
-    private WaliRequest wali;
-    
-    // Nested class untuk Alamat
-    public static class AlamatRequest {
-        @NotBlank(message = "Alamat wajib diisi")
-        private String namaAlamat;
-        
-        @NotBlank(message = "Provinsi wajib diisi")
-        private String provinsi;
-        
-        @NotBlank(message = "Kota wajib diisi")
-        private String kota;
-        
-        @NotBlank(message = "Kecamatan wajib diisi")
-        private String kecamatan;
-        
-        @NotBlank(message = "Kelurahan wajib diisi")
-        private String kelurahan;
-        
-        @NotBlank(message = "Kode pos wajib diisi")
-        private String kodePos;
-        
-        // Constructors
-        public AlamatRequest() {}
-        
-        // Getters and Setters
-        public String getNamaAlamat() { return namaAlamat; }
-        public void setNamaAlamat(String namaAlamat) { this.namaAlamat = namaAlamat; }
-        
-        public String getProvinsi() { return provinsi; }
-        public void setProvinsi(String provinsi) { this.provinsi = provinsi; }
-        
-        public String getKota() { return kota; }
-        public void setKota(String kota) { this.kota = kota; }
-        
-        public String getKecamatan() { return kecamatan; }
-        public void setKecamatan(String kecamatan) { this.kecamatan = kecamatan; }
-        
-        public String getKelurahan() { return kelurahan; }
-        public void setKelurahan(String kelurahan) { this.kelurahan = kelurahan; }
-        
-        public String getKodePos() { return kodePos; }
-        public void setKodePos(String kodePos) { this.kodePos = kodePos; }
-    }
-    
-    // Nested class untuk Wali
-    public static class WaliRequest {
-        @NotBlank(message = "Jenis wali wajib diisi")
-        private String jenisWali;
-        
-        @NotBlank(message = "Nama lengkap wali wajib diisi")
-        private String namaLengkapWali;
-        
-        @NotBlank(message = "Pekerjaan wali wajib diisi")
-        private String pekerjaanWali;
-        
-        @NotBlank(message = "Alamat wali wajib diisi")
-        private String alamatWali;
-        
-        @NotBlank(message = "Nomor telepon wali wajib diisi")
-        @Pattern(regexp = "^08[0-9]{8,11}$", message = "Format nomor telepon wali tidak valid")
-        private String nomorTeleponWali;
-        
-        // Constructors
-        public WaliRequest() {}
-        
-        // Getters and Setters
-        public String getJenisWali() { return jenisWali; }
-        public void setJenisWali(String jenisWali) { this.jenisWali = jenisWali; }
-        
-        public String getNamaLengkapWali() { return namaLengkapWali; }
-        public void setNamaLengkapWali(String namaLengkapWali) { this.namaLengkapWali = namaLengkapWali; }
-        
-        public String getPekerjaanWali() { return pekerjaanWali; }
-        public void setPekerjaanWali(String pekerjaanWali) { this.pekerjaanWali = pekerjaanWali; }
-        
-        public String getAlamatWali() { return alamatWali; }
-        public void setAlamatWali(String alamatWali) { this.alamatWali = alamatWali; }
-        
-        public String getNomorTeleponWali() { return nomorTeleponWali; }
-        public void setNomorTeleponWali(String nomorTeleponWali) { this.nomorTeleponWali = nomorTeleponWali; }
-    }
+    private WaliRequest wali;  // Removed @NotNull annotation
     
     // Constructors
     public RegistrationRequest() {}
     
-    // Main Getters and Setters
+    // Getters and Setters
     public String getNamaLengkap() { return namaLengkap; }
     public void setNamaLengkap(String namaLengkap) { this.namaLengkap = namaLengkap; }
     
@@ -177,6 +96,12 @@ public class RegistrationRequest {
     
     public String getTipeAkun() { return tipeAkun; }
     public void setTipeAkun(String tipeAkun) { this.tipeAkun = tipeAkun; }
+    
+    // NEW GETTER/SETTER: jenisKartu
+    public String getJenisKartu() { return jenisKartu; }
+    public void setJenisKartu(String jenisKartu) { 
+        this.jenisKartu = (jenisKartu != null && !jenisKartu.isEmpty()) ? jenisKartu : "Silver"; 
+    }
     
     public String getTempatLahir() { return tempatLahir; }
     public void setTempatLahir(String tempatLahir) { this.tempatLahir = tempatLahir; }
@@ -213,4 +138,78 @@ public class RegistrationRequest {
     
     public WaliRequest getWali() { return wali; }
     public void setWali(WaliRequest wali) { this.wali = wali; }
+    
+    // Nested Classes
+    public static class AlamatRequest {
+        @NotBlank(message = "Nama alamat wajib diisi")
+        private String namaAlamat;
+        
+        @NotBlank(message = "Provinsi wajib diisi")
+        private String provinsi;
+        
+        @NotBlank(message = "Kota wajib diisi")
+        private String kota;
+        
+        @NotBlank(message = "Kecamatan wajib diisi")
+        private String kecamatan;
+        
+        @NotBlank(message = "Kelurahan wajib diisi")
+        private String kelurahan;
+        
+        @NotBlank(message = "Kode pos wajib diisi")
+        private String kodePos;
+        
+        // Getters and Setters
+        public String getNamaAlamat() { return namaAlamat; }
+        public void setNamaAlamat(String namaAlamat) { this.namaAlamat = namaAlamat; }
+        
+        public String getProvinsi() { return provinsi; }
+        public void setProvinsi(String provinsi) { this.provinsi = provinsi; }
+        
+        public String getKota() { return kota; }
+        public void setKota(String kota) { this.kota = kota; }
+        
+        public String getKecamatan() { return kecamatan; }
+        public void setKecamatan(String kecamatan) { this.kecamatan = kecamatan; }
+        
+        public String getKelurahan() { return kelurahan; }
+        public void setKelurahan(String kelurahan) { this.kelurahan = kelurahan; }
+        
+        public String getKodePos() { return kodePos; }
+        public void setKodePos(String kodePos) { this.kodePos = kodePos; }
+    }
+    
+    // UPDATED: WaliRequest tanpa @NotBlank untuk semua field (karena optional)
+    public static class WaliRequest {
+        private String jenisWali;
+        private String namaLengkapWali;
+        private String pekerjaanWali;
+        private String alamatWali;
+        private String nomorTeleponWali;
+        
+        // Getters and Setters
+        public String getJenisWali() { return jenisWali; }
+        public void setJenisWali(String jenisWali) { this.jenisWali = jenisWali; }
+        
+        public String getNamaLengkapWali() { return namaLengkapWali; }
+        public void setNamaLengkapWali(String namaLengkapWali) { this.namaLengkapWali = namaLengkapWali; }
+        
+        public String getPekerjaanWali() { return pekerjaanWali; }
+        public void setPekerjaanWali(String pekerjaanWali) { this.pekerjaanWali = pekerjaanWali; }
+        
+        public String getAlamatWali() { return alamatWali; }
+        public void setAlamatWali(String alamatWali) { this.alamatWali = alamatWali; }
+        
+        public String getNomorTeleponWali() { return nomorTeleponWali; }
+        public void setNomorTeleponWali(String nomorTeleponWali) { this.nomorTeleponWali = nomorTeleponWali; }
+        
+        // Helper method untuk check apakah wali data lengkap
+        public boolean isComplete() {
+            return jenisWali != null && !jenisWali.trim().isEmpty() &&
+                   namaLengkapWali != null && !namaLengkapWali.trim().isEmpty() &&
+                   pekerjaanWali != null && !pekerjaanWali.trim().isEmpty() &&
+                   alamatWali != null && !alamatWali.trim().isEmpty() &&
+                   nomorTeleponWali != null && !nomorTeleponWali.trim().isEmpty();
+        }
+    }
 }

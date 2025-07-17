@@ -38,4 +38,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
     @Query("SELECT COUNT(c) FROM Customer c WHERE c.createdAt >= CURRENT_DATE")
     Long countTodayRegistrations();
+
+    boolean existsByKodeRekening(Integer kodeRekening);
+    Optional<Customer> findByKodeRekening(Integer kodeRekening);
+
+    @Query("SELECT COUNT(c) FROM Customer c WHERE c.jenisKartu = :jenisKartu")
+    long countByJenisKartu(@Param("jenisKartu") String jenisKartu);
+    
+    @Query("SELECT c FROM Customer c WHERE c.jenisKartu = :jenisKartu")
+    java.util.List<Customer> findByJenisKartu(@Param("jenisKartu") String jenisKartu);
 }
