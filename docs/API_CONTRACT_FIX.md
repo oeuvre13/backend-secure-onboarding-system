@@ -18,13 +18,12 @@
 
 ---
 
-# 📋 API Endpoints
+## 📋 API Endpoints
 
-## 1. REGISTRATION MANAGEMENT (`/api/auth`) 📝
+### 1. REGISTRATION MANAGEMENT (`/api/auth`) 📝
 
-### 🏥 **GET** `/api/auth/health`
+#### 🏥 **GET** `/api/auth/health`
 
-### 🏥 **GET** `/api/auth/health`
 Health check untuk registration service
 
 - **Response (200)**
@@ -68,7 +67,7 @@ Health check untuk registration service
 
 ---
 
-### 📝 **POST** `/api/auth/register` ⭐ **MAIN ENDPOINT**
+#### 📝 **POST** `/api/auth/register` ⭐ **MAIN ENDPOINT**
 
 Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
@@ -112,11 +111,12 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 }
 ```
 
-#### JenisKartu Field Details
+##### JenisKartu Field Details
+
 - **Field Name:** `jenisKartu`
 - **Type:** String
 - **Required:** Yes
-- **Valid Values:** 
+- **Valid Values:**
   - `"Silver"` - Basic card level
   - `"Gold"` - Premium card level  
   - `"Platinum"` - Premium plus card level
@@ -124,7 +124,8 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 - **Validation:** Must be one of the valid values above
 - **Default:** None (field is required)
 
-#### Success Response (200) + Set-Cookie - **UPDATED**
+- **Success Response (200)** + Set-Cookie - **UPDATED**
+
 ```json
 {
   "success": true,
@@ -162,7 +163,8 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 }
 ```
 
-#### Validation Error (400) - **NEW JenisKartu Errors**
+##### Validation Error (400) - **NEW JenisKartu Errors**
+
 ```json
 {
   "success": false,
@@ -173,13 +175,14 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
 **Set-Cookie Header:**
 
-```
+```conf
 Set-Cookie: authToken=<jwt-token>; HttpOnly; Path=/; Max-Age=86400; Domain=localhost
 ```
 
 ---
 
-### 🔑 **POST** `/api/auth/check-password`
+#### 🔑 **POST** `/api/auth/check-password`
+
 Check password strength
 
 - **Request**
@@ -200,7 +203,8 @@ Check password strength
 
 ---
 
-### ✅ **POST** `/api/auth/validate-nik`
+#### ✅ **POST** `/api/auth/validate-nik`
+
 Validasi format NIK
 
 - **Request**
@@ -223,7 +227,8 @@ Validasi format NIK
 
 ---
 
-### 📧 **POST** `/api/auth/verify-email`
+#### 📧 **POST** `/api/auth/verify-email`
+
 Verify customer email
 
 - **Request**
@@ -244,7 +249,8 @@ Verify customer email
 
 ---
 
-### 📊 **GET** `/api/auth/stats`
+#### 📊 **GET** `/api/auth/stats`
+
 Registration statistics - **UPDATED dengan JenisKartu breakdown**
 
 - **Response (200)**
@@ -268,16 +274,17 @@ Registration statistics - **UPDATED dengan JenisKartu breakdown**
 
 ---
 
-### 👤 **GET** `/api/auth/profile`
+#### 👤 **GET** `/api/auth/profile`
+
 Get customer profile (requires authentication) - **UPDATED**
 
-#### Headers
+- **Headers**
 
-```
+```conf
 Cookie: authToken=<jwt-token>
 ```
 
-#### Success Response (200)
+- **Success Response (200)**
 
 ```json
 {
@@ -316,9 +323,9 @@ Cookie: authToken=<jwt-token>
 
 ---
 
-## 2. AUTHENTICATION (`/api/auth`) 🔐
+### 2. AUTHENTICATION (`/api/auth`) 🔐
 
-### 🔐 **POST** `/api/auth/login` ⭐ **MAIN ENDPOINT**
+#### 🔐 **POST** `/api/auth/login` ⭐ **MAIN ENDPOINT**
 
 Customer login dengan email dan password
 
@@ -331,7 +338,8 @@ Customer login dengan email dan password
 }
 ```
 
-#### Success Response (200) + Set-Cookie - **UPDATED**
+- **Success Response (200)** + Set-Cookie - **UPDATED**
+
 ```json
 {
   "message": "Login berhasil",
@@ -367,7 +375,7 @@ Customer login dengan email dan password
 }
 ```
 
-#### Failed Response (400)
+##### Failed Response (400)
 
 ```json
 {
@@ -377,16 +385,17 @@ Customer login dengan email dan password
 
 ---
 
-### 👤 **GET** `/api/auth/me`
+#### 👤 **GET** `/api/auth/me`
+
 Get current authenticated user - **UPDATED**
 
-#### Headers
+- **Headers**
 
-```
+```conf
 Cookie: authToken=<jwt-token>
 ```
 
-#### Success Response (200)
+- **Success Response (200)**
 
 ```json
 {
@@ -419,7 +428,7 @@ Cookie: authToken=<jwt-token>
 
 ---
 
-### 🚪 **POST** `/api/auth/logout`
+#### 🚪 **POST** `/api/auth/logout`
 
 Logout user (clear cookie)
 
@@ -433,17 +442,17 @@ Logout user (clear cookie)
 
 ---
 
-### 🔄 **POST** `/api/auth/refresh-token`
+#### 🔄 **POST** `/api/auth/refresh-token`
 
 Refresh JWT token
 
-#### Headers
+- **Headers**
 
-```
+```conf
 Cookie: authToken=<jwt-token>
 ```
 
-#### Success Response (200) + Set-Cookie
+- **Success Response (200)** + Set-Cookie
 
 ```json
 {
@@ -453,17 +462,17 @@ Cookie: authToken=<jwt-token>
 
 ---
 
-### ✅ **GET** `/api/auth/check-auth`
+#### ✅ **GET** `/api/auth/check-auth`
 
 Check authentication status
 
-#### Headers
+- **Headers**
 
-```
+```conf
 Cookie: authToken=<jwt-token>
 ```
 
-#### Authenticated Response (200)
+##### Authenticated Response (200)
 
 ```json
 {
@@ -473,7 +482,7 @@ Cookie: authToken=<jwt-token>
 }
 ```
 
-#### Not Authenticated Response (200)
+##### Not Authenticated Response (200)
 
 ```json
 {
@@ -483,9 +492,9 @@ Cookie: authToken=<jwt-token>
 
 ---
 
-## 3. VERIFICATION SERVICE (`/api/verification`) 🔍
+### 3. VERIFICATION SERVICE (`/api/verification`) 🔍
 
-### 🏥 **GET** `/api/verification/health`
+#### 🏥 **GET** `/api/verification/health`
 
 Health check verification service
 
@@ -508,7 +517,7 @@ Health check verification service
 
 ---
 
-### 🔍 **POST** `/api/verification/nik` ⭐ **MAIN ENDPOINT**
+#### 🔍 **POST** `/api/verification/nik` ⭐ **MAIN ENDPOINT**
 
 Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 
@@ -522,7 +531,7 @@ Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 }
 ```
 
-#### Success Response (200)
+- **Success Response (200)**
 
 ```json
 {
@@ -543,7 +552,7 @@ Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 }
 ```
 
-#### Failed Response (200)
+##### Failed Response (200)
 
 ```json
 {
@@ -555,7 +564,7 @@ Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 
 ---
 
-### 📧 **POST** `/api/verification/email`
+#### 📧 **POST** `/api/verification/email`
 
 Verifikasi ketersediaan email
 
@@ -567,7 +576,7 @@ Verifikasi ketersediaan email
 }
 ```
 
-#### Available Response (200)
+- **Available Response (200)**
 
 ```json
 {
@@ -579,7 +588,7 @@ Verifikasi ketersediaan email
 
 ---
 
-### 📱 **POST** `/api/verification/phone`
+#### 📱 **POST** `/api/verification/phone`
 
 Verifikasi ketersediaan nomor telepon
 
@@ -591,7 +600,7 @@ Verifikasi ketersediaan nomor telepon
 }
 ```
 
-#### Available Response (200)
+- **Available Response (200)**
 
 ```json
 {
@@ -603,7 +612,7 @@ Verifikasi ketersediaan nomor telepon
 
 ---
 
-### 🆔 **POST** `/api/verification/nik-check`
+#### 🆔 **POST** `/api/verification/nik-check`
 
 Check NIK tanpa nama (simple check)
 
@@ -615,7 +624,7 @@ Check NIK tanpa nama (simple check)
 }
 ```
 
-#### Registered Response (200)
+##### Registered Response (200)
 
 ```json
 {
@@ -626,7 +635,7 @@ Check NIK tanpa nama (simple check)
 
 ---
 
-### 📊 **GET** `/api/verification/stats`
+#### 📊 **GET** `/api/verification/stats`
 
 Verification statistics
 
@@ -648,37 +657,37 @@ Verification statistics
 
 ---
 
-## 🗂 Endpoint Summary - **UPDATED**
+### 🗂 Endpoint Summary - **UPDATED**
 
-| Method | Endpoint | Description | Auth Required | JenisKartu |
-|--------|----------|-------------|---------------|------------|
-| **Registration Management** |
-| GET | `/api/auth/health` | Health check | ❌ | N/A |
-| POST | `/api/auth/register` | Customer registration + auto login | ❌ | **Required** |
-| POST | `/api/auth/check-password` | Password strength check | ❌ | N/A |
-| POST | `/api/auth/validate-nik` | NIK format validation | ❌ | N/A |
-| POST | `/api/auth/verify-email` | Email verification | ❌ | N/A |
-| GET | `/api/auth/stats` | Registration statistics | ❌ | **Breakdown** |
-| GET | `/api/auth/profile` | Customer profile | ✅ | **Included** |
-| **Authentication** |
-| POST | `/api/auth/login` | Customer login | ❌ | **Returned** |
-| GET | `/api/auth/me` | Current user info | ✅ | **Included** |
-| POST | `/api/auth/logout` | Logout user | ✅ | N/A |
-| POST | `/api/auth/refresh-token` | Refresh JWT token | ✅ | N/A |
-| GET | `/api/auth/check-auth` | Check auth status | ✅ | **Included** |
-| **Verification Service** |
-| GET | `/api/verification/health` | Health check | ❌ | N/A |
-| POST | `/api/verification/nik` | NIK + name + birthdate verification | ❌ | N/A |
-| POST | `/api/verification/email` | Email availability check | ❌ | N/A |
-| POST | `/api/verification/phone` | Phone availability check | ❌ | N/A |
-| POST | `/api/verification/nik-check` | NIK existence check | ❌ | N/A |
-| GET | `/api/verification/stats` | Verification statistics | ❌ | N/A |
+| Method                      | Endpoint                      | Description                         | Auth Required | JenisKartu    |
+| --------------------------- | ----------------------------- | ----------------------------------- | ------------- | ------------- |
+| **Registration Management** |                               |                                     |               |               |
+| GET                         | `/api/auth/health`            | Health check                        | ❌            | N/A           |
+| POST                        | `/api/auth/register`          | Customer registration + auto login  | ❌            | **Required**  |
+| POST                        | `/api/auth/check-password`    | Password strength check             | ❌            | N/A           |
+| POST                        | `/api/auth/validate-nik`      | NIK format validation               | ❌            | N/A           |
+| POST                        | `/api/auth/verify-email`      | Email verification                  | ❌            | N/A           |
+| GET                         | `/api/auth/stats`             | Registration statistics             | ❌            | **Breakdown** |
+| GET                         | `/api/auth/profile`           | Customer profile                    | ✅            | **Included**  |
+| **Authentication**          |                               |                                     |               |               |
+| POST                        | `/api/auth/login`             | Customer login                      | ❌            | **Returned**  |
+| GET                         | `/api/auth/me`                | Current user info                   | ✅            | **Included**  |
+| POST                        | `/api/auth/logout`            | Logout user                         | ✅            | N/A           |
+| POST                        | `/api/auth/refresh-token`     | Refresh JWT token                   | ✅            | N/A           |
+| GET                         | `/api/auth/check-auth`        | Check auth status                   | ✅            | **Included**  |
+| **Verification Service**    |                               |                                     |               |               |
+| GET                         | `/api/verification/health`    | Health check                        | ❌            | N/A           |
+| POST                        | `/api/verification/nik`       | NIK + name + birthdate verification | ❌            | N/A           |
+| POST                        | `/api/verification/email`     | Email availability check            | ❌            | N/A           |
+| POST                        | `/api/verification/phone`     | Phone availability check            | ❌            | N/A           |
+| POST                        | `/api/verification/nik-check` | NIK existence check                 | ❌            | N/A           |
+| GET                         | `/api/verification/stats`     | Verification statistics             | ❌            | N/A           |
 
 ---
 
-## 🔧 Configuration & Security
+### 🔧 Configuration & Security
 
-### Cookie Configuration
+#### Cookie Configuration
 
 - **Name:** `authToken`
 - **HttpOnly:** `true` (XSS protection)
@@ -687,14 +696,15 @@ Verification statistics
 - **Domain:** `localhost` (development)
 - **Max-Age:** `86400` seconds (24 hours)
 
-### JenisKartu Configuration - **NEW**
+#### JenisKartu Configuration - **NEW**
+
 - **Valid Values:** `["Silver", "Gold", "Platinum", "Batik Air"]`
 - **Required:** Yes (for registration)
 - **Case Sensitive:** Yes
 - **Default Value:** None (must be explicitly provided)
 - **Database Column:** `VARCHAR(20) NOT NULL`
 
-### External Dependencies
+#### External Dependencies
 
 - **Dukcapil Service:** `http://localhost:8081` (NIK verification)
 - **Database:** PostgreSQL for customer data
@@ -702,15 +712,17 @@ Verification statistics
 
 ---
 
-## 🎯 JenisKartu Business Rules
+### 🎯 JenisKartu Business Rules
 
-### Card Type Descriptions
+#### Card Type Descriptions
+
 - **Silver:** Entry-level card with basic features
 - **Gold:** Premium card with enhanced benefits
 - **Platinum:** Top-tier card with exclusive privileges
 - **Batik Air:** Partnership card with airline-specific benefits
 
-### Card Type Features (Business Logic)
+#### Card Type Features (Business Logic)
+
 ```json
 {
   "Silver": {
@@ -742,9 +754,10 @@ Verification statistics
 
 ---
 
-## 📝 Sample Registration Requests by Card Type
+### 📝 Sample Registration Requests by Card Type
 
-### Silver Card Registration
+#### Silver Card Registration
+
 ```json
 {
   "namaLengkap": "Ahmad Santosa",
@@ -768,7 +781,8 @@ Verification statistics
 }
 ```
 
-### Gold Card Registration
+#### Gold Card Registration
+
 ```json
 {
   "namaLengkap": "Maria Putri",
@@ -792,7 +806,8 @@ Verification statistics
 }
 ```
 
-### Platinum Card Registration
+#### Platinum Card Registration
+
 ```json
 {
   "namaLengkap": "David Kusuma",
@@ -816,7 +831,8 @@ Verification statistics
 }
 ```
 
-### Batik Air Card Registration
+#### Batik Air Card Registration
+
 ```json
 {
   "namaLengkap": "Sarah Airlines",
@@ -842,9 +858,10 @@ Verification statistics
 
 ---
 
-## ❌ Error Codes & Messages
+### ❌ Error Codes & Messages
 
-### JenisKartu Validation Errors
+#### JenisKartu Validation Errors
+
 ```json
 {
   "INVALID_CARD_TYPE": {
@@ -865,7 +882,8 @@ Verification statistics
 }
 ```
 
-### General Validation Errors
+#### General Validation Errors
+
 ```json
 {
   "EMAIL_ALREADY_EXISTS": {
@@ -888,9 +906,10 @@ Verification statistics
 
 ---
 
-## 🔍 Database Schema Updates
+### 🔍 Database Schema Updates
 
-### Customer Table - **UPDATED**
+#### Customer Table - **UPDATED**
+
 ```sql
 CREATE TABLE customers (
     id BIGSERIAL PRIMARY KEY,
@@ -918,7 +937,8 @@ CREATE TABLE customers (
 );
 ```
 
-### Address Table (Embedded)
+#### Address Table (Embedded)
+
 ```sql
 ALTER TABLE customers ADD COLUMN alamat_nama_alamat VARCHAR(255);
 ALTER TABLE customers ADD COLUMN alamat_provinsi VARCHAR(50);
@@ -928,7 +948,8 @@ ALTER TABLE customers ADD COLUMN alamat_kelurahan VARCHAR(50);
 ALTER TABLE customers ADD COLUMN alamat_kode_pos VARCHAR(10);
 ```
 
-### Guardian Table (Embedded)
+#### Guardian Table (Embedded)
+
 ```sql
 ALTER TABLE customers ADD COLUMN wali_jenis_wali VARCHAR(20);
 ALTER TABLE customers ADD COLUMN wali_nama_lengkap_wali VARCHAR(100);
@@ -937,7 +958,8 @@ ALTER TABLE customers ADD COLUMN wali_alamat_wali VARCHAR(255);
 ALTER TABLE customers ADD COLUMN wali_nomor_telepon_wali VARCHAR(15);
 ```
 
-### Indexes for Performance
+#### Indexes for Performance
+
 ```sql
 CREATE INDEX idx_customers_jenis_kartu ON customers(jenis_kartu);
 CREATE INDEX idx_customers_email ON customers(email);
@@ -947,12 +969,14 @@ CREATE INDEX idx_customers_created_at ON customers(created_at);
 
 ---
 
-## 📊 Analytics & Reporting Endpoints
+### 📊 Analytics & Reporting Endpoints
 
-### **GET** `/api/auth/analytics/card-distribution`
+#### **GET** `/api/auth/analytics/card-distribution`
+
 Get distribution of customers by card type
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "cardDistribution": {
@@ -979,14 +1003,17 @@ Get distribution of customers by card type
 }
 ```
 
-### **GET** `/api/auth/analytics/monthly-registrations`
+#### **GET** `/api/auth/analytics/monthly-registrations`
+
 Get monthly registration statistics by card type
 
-#### Query Parameters
+##### Query Parameters
+
 - `year` (optional): Year to filter (default: current year)
 - `cardType` (optional): Filter by specific card type
 
-#### Response (200)
+- **Response (200)**
+
 ```json
 {
   "year": 2024,
@@ -1014,15 +1041,17 @@ Get monthly registration statistics by card type
 
 ---
 
-## 🛡️ Security Considerations
+### 🛡️ Security Considerations
 
-### JenisKartu Security
+#### JenisKartu Security
+
 - Card type cannot be changed after registration (requires admin intervention)
 - Card type determines transaction limits and access levels
 - Audit trail maintained for all card type assignments
 - Rate limiting applied to registration endpoints
 
-### Validation Rules
+#### Validation Rules
+
 - JenisKartu must be validated server-side
 - Client-side validation is supplementary only
 - Database constraints enforce valid card types
@@ -1030,16 +1059,18 @@ Get monthly registration statistics by card type
 
 ---
 
-## 🚀 Future Enhancements
+### 🚀 Future Enhancements
 
-### Planned JenisKartu Features
+#### Planned JenisKartu Features
+
 1. **Card Upgrade System** - Allow customers to upgrade their card type
 2. **Dynamic Limits** - Adjust limits based on customer behavior
 3. **Seasonal Cards** - Temporary card types for special promotions
 4. **Corporate Cards** - Business-specific card types
 5. **Student Cards** - Discounted card types for students
 
-### API Versioning
+#### API Versioning
+
 - Current version: `v1`
 - JenisKartu field introduced in: `v1.0.0`
 - Backward compatibility maintained for 6 months

@@ -3,17 +3,20 @@
 ## 1. Install Cloudflared
 
 ### macOS
+
 ```bash
 brew install cloudflared
 ```
 
 ### Windows
+
 ```bash
 # Download dari: https://github.com/cloudflare/cloudflared/releases
 # Extract dan add ke PATH
 ```
 
 ### Linux
+
 ```bash
 # Debian/Ubuntu
 curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
@@ -27,6 +30,7 @@ sudo rpm -i cloudflared.rpm
 ## 2. Quick Start (Tanpa Akun - Temporary)
 
 ### Start Spring Boot
+
 ```bash
 # Terminal 1: Start aplikasi kamu
 ./mvnw spring-boot:run
@@ -35,13 +39,15 @@ sudo rpm -i cloudflared.rpm
 ```
 
 ### Start Cloudflare Tunnel
+
 ```bash
 # Terminal 2: Start tunnel (temporary)
 cloudflared tunnel --url http://localhost:8080
 ```
 
 **Output akan seperti ini:**
-```
+
+```log
 2024-01-XX T10:00:00Z INF Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out. However, be aware that these account-less tunnels have no uptime guarantee. If you intend to use tunnels in production you should use a pre-created named tunnel by following: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
 2024-01-XX T10:00:00Z INF Requesting new quick Tunnel on trycloudflare.com...
 2024-01-XX T10:00:00Z INF +--------------------------------------------------------------------------------------------+
@@ -55,6 +61,7 @@ cloudflared tunnel --url http://localhost:8080
 ## 3. Update CORS di Spring Boot
 
 ### Edit application.yml
+
 ```yaml
 app:
   cors:
@@ -62,6 +69,7 @@ app:
 ```
 
 ### Restart Spring Boot
+
 ```bash
 # Ctrl+C di terminal Spring Boot
 ./mvnw spring-boot:run
@@ -70,11 +78,13 @@ app:
 ## 4. Test Public URL
 
 ### Health Check
+
 ```bash
 curl https://random-name-123.trycloudflare.com/api/auth/health
 ```
 
 ### Test Registration
+
 ```bash
 curl -X POST https://random-name-123.trycloudflare.com/api/auth/register \
   -H "Content-Type: application/json" \
@@ -117,12 +127,14 @@ curl -X POST https://random-name-123.trycloudflare.com/api/auth/register \
 ## 5. Share ke Tim Frontend
 
 ### Base URL untuk React
+
 ```javascript
 // .env di project React tim FE
 REACT_APP_API_URL=https://random-name-123.trycloudflare.com/api
 ```
 
 ### Axios Setup
+
 ```javascript
 import axios from 'axios';
 
@@ -142,11 +154,13 @@ export default api;
 ## 6. Setup dengan Akun Cloudflare (Optional - untuk persistent URL)
 
 ### Login Cloudflare
+
 ```bash
 cloudflared tunnel login
 ```
 
 ### Create Named Tunnel
+
 ```bash
 # Create tunnel
 cloudflared tunnel create customer-registration-api
@@ -156,6 +170,7 @@ nano ~/.cloudflared/config.yml
 ```
 
 ### Config File Content
+
 ```yaml
 tunnel: customer-registration-api
 credentials-file: /Users/yourname/.cloudflared/your-tunnel-id.json
@@ -167,6 +182,7 @@ ingress:
 ```
 
 ### Start Named Tunnel
+
 ```bash
 cloudflared tunnel run customer-registration-api
 ```
@@ -176,6 +192,7 @@ cloudflared tunnel run customer-registration-api
 ## 7. Quick Commands untuk Development
 
 ### Start Everything
+
 ```bash
 # Terminal 1: Spring Boot
 ./mvnw spring-boot:run
@@ -188,6 +205,7 @@ cloudflared tunnel --url http://localhost:8080
 ```
 
 ### Stop Everything
+
 ```bash
 # Ctrl+C di kedua terminal
 ```
@@ -209,6 +227,7 @@ cloudflared tunnel --url http://localhost:8080
 ## 9. Troubleshooting
 
 ### Tunnel tidak connect
+
 ```bash
 # Cek versi cloudflared
 cloudflared version
@@ -218,10 +237,12 @@ brew upgrade cloudflared  # macOS
 ```
 
 ### CORS error
+
 - Pastikan URL cloudflare ada di `allowed-origins`
 - Restart Spring Boot setelah update CORS
 
 ### Port sudah digunakan
+
 ```bash
 # Cek port 8080
 lsof -i :8080
@@ -237,6 +258,7 @@ kill -9 PID
 **Base URL:** `https://random-name-123.trycloudflare.com/api`
 
 **Endpoints:**
+
 - `POST /auth/register` - Registrasi customer
 - `POST /auth/login` - Login
 - `GET /auth/me` - Get current user
@@ -244,6 +266,7 @@ kill -9 PID
 - `GET /auth/health` - Health check
 
 **Important:**
+
 - Pakai `withCredentials: true` di axios
 - NIK harus dari database KTP yang valid
 - Auth menggunakan HTTP-only cookies
