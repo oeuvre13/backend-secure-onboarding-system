@@ -6,7 +6,7 @@ curl -X GET "http://localhost:8080/api/auth/health" \
 
 # 2. Registration (Create Test User)
 # 1. Test Register Customer (POST /auth/register)
-curl -X POST http://localhost:8080/api/auth/register \
+curl -X POST http://localhost:8080/api/registration/register \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "John Doe",
@@ -44,10 +44,12 @@ curl -X POST http://localhost:8080/api/auth/register \
   }'
 
 # 2. Test Validate NIK (POST /auth/validate-nik)
-curl -X POST http://localhost:8080/auth/validate-nik \
+curl -X POST http://localhost:8080/api/verification/nik \
   -H "Content-Type: application/json" \
   -d '{
-    "nik": "3201012345678901"
+    "nik": "3175031234567890",
+    "namaLengkap" : "John Doe",
+    "tanggalLahir" : "1990-05-15"
   }'
 
 # 3. Test Password Strength (POST /auth/check-password)

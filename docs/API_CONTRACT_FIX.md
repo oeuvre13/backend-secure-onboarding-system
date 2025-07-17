@@ -1,35 +1,26 @@
-# 📄 API Contract - Customer Registration Service (Final Version)
+# 📄 API Contract - Customer Registration Service
 
 ## Service Information
 - **Service Name:** Customer Registration Service dengan Dukcapil Integration
 - **Version:** 1.0.0
-- **Base URL:** `http://localhost:8080`
+- **Base URL:** `http://localhost:8080/api`
 - **Protocol:** HTTP/HTTPS
 - **Content-Type:** `application/json`
 - **Authentication:** Cookie-based (HTTP-only cookies)
 
-## 🎯 Service Architecture (Final & Synced)
-3 Controller dengan rate limiting yang tepat:
-1. **`/registration`** - Registration Management (NO Rate Limiting)
-2. **`/auth`** - Authentication & Login (Rate Limited ✅)
-3. **`/verification`** - NIK & Data Verification (Rate Limited ✅)
-
-## 🔧 Rate Limiting Configuration
-- **Enabled:** `true`
-- **Capacity:** 10 requests per client
-- **Refill Rate:** 2 requests per minute
-- **Applied to:** `/auth/**` and `/verification/**`
-- **Client Identification:** IP Address (with X-Forwarded-For support)
-- **Response on Limit:** HTTP 429 + `{"error":"Too many requests. Please try again later."}`
+## 🎯 Service Architecture
+3 Controller dengan endpoint yang berbeda:
+1. **`/api/registration`** - Registration Management
+2. **`/api/auth`** - Authentication & Login  
+3. **`/api/verification`** - NIK & Data Verification
 
 ---
 
 # 📋 API Endpoints
 
-## 1. REGISTRATION MANAGEMENT (`/registration`) 📝
-**🚫 NO Rate Limiting Applied**
+## 1. REGISTRATION MANAGEMENT (`/api/registration`) 📝
 
-### 🏥 **GET** `/registration/health`
+### 🏥 **GET** `/api/registration/health`
 Health check untuk registration service
 
 #### Response (200)
@@ -59,48 +50,44 @@ Health check untuk registration service
 }
 ```
 
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/registration/health
-```
-
 ---
 
-### 📝 **POST** `/registration/register` ⭐ **MAIN ENDPOINT**
+### 📝 **POST** `/api/registration/register` ⭐ **MAIN ENDPOINT**
 Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
 #### Request Body
 ```json
 {
-  "namaLengkap": "Bostang Pejompongan",
-  "namaIbuKandung": "Siti Aminah", 
-  "nomorTelepon": "089651524900",
-  "email": "bostang.p@example.com",
-  "password": "Password123!",
+  "namaLengkap": "John Doe",
+  "nik": "3175031234567890",
+  "namaIbuKandung": "Mary Doe",
+  "nomorTelepon": "081234567890",
+  "email": "john.doe@example.com",
+  "password": "JohnDoe123!",
   "tipeAkun": "BNI Taplus",
   "tempatLahir": "Jakarta",
-  "tanggalLahir": "1995-07-10",
+  "tanggalLahir": "1990-05-15",
   "jenisKelamin": "Laki-laki",
   "agama": "Islam",
   "statusPernikahan": "Belum Kawin",
-  "pekerjaan": "Karyawan Swasta",
+  "pekerjaan": "Software Engineer",
   "sumberPenghasilan": "Gaji",
-  "rentangGaji": ">Rp5 - 10 juta",
+  "rentangGaji": "5-10 juta",
   "tujuanPembuatanRekening": "Tabungan",
-  "kodeRekening": 1023,
+  "kodeRekening": 1001,
   "alamat": {
-    "namaAlamat": "Jl. Melati No. 10",
+    "namaAlamat": "Jl. Sudirman No. 123",
     "provinsi": "DKI Jakarta",
-    "kota": "Jakarta Selatan", 
-    "kecamatan": "Kebayoran Baru",
-    "kelurahan": "Melawai",
-    "kodePos": "12160"
+    "kota": "Jakarta Pusat",
+    "kecamatan": "Tanah Abang",
+    "kelurahan": "Bendungan Hilir",
+    "kodePos": "10210"
   },
   "wali": {
     "jenisWali": "Ayah",
-    "namaLengkapWali": "Budi Hartono",
+    "namaLengkapWali": "Robert Doe",
     "pekerjaanWali": "Pensiunan",
-    "alamatWali": "Jl. Melati No. 10",
+    "alamatWali": "Jl. Sudirman No. 123",
     "nomorTeleponWali": "081298765432"
   }
 }
@@ -113,29 +100,29 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
   "message": "Registrasi berhasil! Data Anda telah terverifikasi dengan KTP Dukcapil.",
   "customer": {
     "id": 1,
-    "namaLengkap": "Bostang Pejompongan",
+    "namaLengkap": "John Doe",
     "nik": "3175031234567890",
-    "email": "bostang.p@example.com",
-    "nomorTelepon": "089651524900",
+    "email": "john.doe@example.com",
+    "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
     "tempatLahir": "Jakarta",
-    "tanggalLahir": "1995-07-10",
+    "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
     "agama": "Islam",
     "statusPernikahan": "Belum Kawin",
-    "pekerjaan": "Karyawan Swasta",
+    "pekerjaan": "Software Engineer",
     "emailVerified": false,
     "alamat": {
-      "namaAlamat": "Jl. Melati No. 10",
+      "namaAlamat": "Jl. Sudirman No. 123",
       "provinsi": "DKI Jakarta",
-      "kota": "Jakarta Selatan",
-      "kecamatan": "Kebayoran Baru",
-      "kelurahan": "Melawai",
-      "kodePos": "12160"
+      "kota": "Jakarta Pusat",
+      "kecamatan": "Tanah Abang",
+      "kelurahan": "Bendungan Hilir",
+      "kodePos": "10210"
     },
     "wali": {
       "jenisWali": "Ayah",
-      "namaLengkapWali": "Budi Hartono",
+      "namaLengkapWali": "Robert Doe",
       "pekerjaanWali": "Pensiunan",
       "nomorTeleponWali": "081298765432"
     }
@@ -152,63 +139,14 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 }
 ```
 
-#### System Error (400)
-```json
-{
-  "success": false,
-  "error": "Terjadi kesalahan sistem: Database connection failed",
-  "type": "system_error"
-}
-```
-
 **Set-Cookie Header:**
 ```
 Set-Cookie: authToken=<jwt-token>; HttpOnly; Path=/; Max-Age=86400; Domain=localhost
 ```
 
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/registration/register \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "namaLengkap": "Bostang Pejompongan",
-    "namaIbuKandung": "Siti Aminah",
-    "nomorTelepon": "089651524900",
-    "email": "bostang.p@example.com",
-    "password": "Password123!",
-    "tipeAkun": "BNI Taplus",
-    "tempatLahir": "Jakarta",
-    "tanggalLahir": "1995-07-10",
-    "jenisKelamin": "Laki-laki",
-    "agama": "Islam",
-    "statusPernikahan": "Belum Kawin",
-    "pekerjaan": "Karyawan Swasta",
-    "sumberPenghasilan": "Gaji",
-    "rentangGaji": ">Rp5 - 10 juta",
-    "tujuanPembuatanRekening": "Tabungan",
-    "kodeRekening": 1023,
-    "alamat": {
-      "namaAlamat": "Jl. Melati No. 10",
-      "provinsi": "DKI Jakarta",
-      "kota": "Jakarta Selatan",
-      "kecamatan": "Kebayoran Baru",
-      "kelurahan": "Melawai",
-      "kodePos": "12160"
-    },
-    "wali": {
-      "jenisWali": "Ayah",
-      "namaLengkapWali": "Budi Hartono",
-      "pekerjaanWali": "Pensiunan",
-      "alamatWali": "Jl. Melati No. 10",
-      "nomorTeleponWali": "081298765432"
-    }
-  }'
-```
-
 ---
 
-### 🔑 **POST** `/registration/check-password`
+### 🔑 **POST** `/api/registration/check-password`
 Check password strength
 
 #### Request Body
@@ -225,21 +163,9 @@ Check password strength
 }
 ```
 
-**Password Strength Values:**
-- `WEAK` - Password terlalu lemah
-- `MEDIUM` - Password cukup kuat  
-- `STRONG` - Password sangat kuat
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/registration/check-password \
-  -H "Content-Type: application/json" \
-  -d '{"password": "Password123!"}'
-```
-
 ---
 
-### ✅ **POST** `/registration/validate-nik`
+### ✅ **POST** `/api/registration/validate-nik`
 Validasi format NIK
 
 #### Request Body
@@ -258,22 +184,15 @@ Validasi format NIK
 }
 ```
 
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/registration/validate-nik \
-  -H "Content-Type: application/json" \
-  -d '{"nik": "3175031234567890"}'
-```
-
 ---
 
-### 📧 **POST** `/registration/verify-email`
+### 📧 **POST** `/api/registration/verify-email`
 Verify customer email
 
 #### Request Body
 ```json
 {
-  "email": "bostang.p@example.com"
+  "email": "john.doe@example.com"
 }
 ```
 
@@ -284,23 +203,9 @@ Verify customer email
 }
 ```
 
-#### Error Response (400)
-```json
-{
-  "error": "Email tidak valid atau sudah diverifikasi"
-}
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/registration/verify-email \
-  -H "Content-Type: application/json" \
-  -d '{"email": "bostang.p@example.com"}'
-```
-
 ---
 
-### 📊 **GET** `/registration/stats`
+### 📊 **GET** `/api/registration/stats`
 Registration statistics
 
 #### Response (200)
@@ -314,14 +219,9 @@ Registration statistics
 }
 ```
 
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/registration/stats
-```
-
 ---
 
-### 👤 **GET** `/registration/profile`
+### 👤 **GET** `/api/registration/profile`
 Get customer profile (requires authentication)
 
 #### Headers
@@ -334,29 +234,29 @@ Cookie: authToken=<jwt-token>
 {
   "profile": {
     "id": 1,
-    "namaLengkap": "Bostang Pejompongan",
+    "namaLengkap": "John Doe",
     "nik": "3175031234567890",
-    "email": "bostang.p@example.com",
-    "nomorTelepon": "089651524900",
+    "email": "john.doe@example.com",
+    "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
     "tempatLahir": "Jakarta",
-    "tanggalLahir": "1995-07-10",
+    "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
     "agama": "Islam",
     "statusPernikahan": "Belum Kawin",
-    "pekerjaan": "Karyawan Swasta",
+    "pekerjaan": "Software Engineer",
     "emailVerified": false,
     "alamat": {
-      "namaAlamat": "Jl. Melati No. 10",
+      "namaAlamat": "Jl. Sudirman No. 123",
       "provinsi": "DKI Jakarta",
-      "kota": "Jakarta Selatan",
-      "kecamatan": "Kebayoran Baru",
-      "kelurahan": "Melawai",
-      "kodePos": "12160"
+      "kota": "Jakarta Pusat",
+      "kecamatan": "Tanah Abang",
+      "kelurahan": "Bendungan Hilir",
+      "kodePos": "10210"
     },
     "wali": {
       "jenisWali": "Ayah",
-      "namaLengkapWali": "Budi Hartono",
+      "namaLengkapWali": "Robert Doe",
       "pekerjaanWali": "Pensiunan",
       "nomorTeleponWali": "081298765432"
     }
@@ -364,43 +264,18 @@ Cookie: authToken=<jwt-token>
 }
 ```
 
-#### Unauthorized (401)
-```json
-{
-  "error": "Token tidak ditemukan"
-}
-```
-
-#### Not Found (404)
-```json
-{
-  "error": "Customer tidak ditemukan"
-}
-```
-
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/registration/profile \
-  -b cookies.txt
-```
-
 ---
 
-## 2. AUTHENTICATION (`/auth`) 🔐
-**🚨 Rate Limited: 10 requests/minute per IP**
+## 2. AUTHENTICATION (`/api/auth`) 🔐
 
-### 🔐 **POST** `/auth/login` ⭐ **MAIN ENDPOINT**
+### 🔐 **POST** `/api/auth/login` ⭐ **MAIN ENDPOINT**
 Customer login dengan email dan password
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
-- **Response on exceeded:** HTTP 429 + `{"error":"Too many requests. Please try again later."}`
 
 #### Request Body
 ```json
 {
-  "email": "bostang.p@example.com",
-  "password": "Password123!"
+  "email": "john.doe@example.com",
+  "password": "JohnDoe123!"
 }
 ```
 
@@ -410,19 +285,31 @@ Customer login dengan email dan password
   "message": "Login berhasil",
   "customer": {
     "id": 1,
-    "namaLengkap": "Bostang Pejompongan",
-    "email": "bostang.p@example.com",
-    "nomorTelepon": "089651524900",
+    "namaLengkap": "John Doe",
+    "email": "john.doe@example.com",
+    "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
     "tempatLahir": "Jakarta",
-    "tanggalLahir": "1995-07-10",
+    "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
     "agama": "Islam",
     "statusPernikahan": "Belum Kawin",
-    "pekerjaan": "Karyawan Swasta",
+    "pekerjaan": "Software Engineer",
     "emailVerified": false,
-    "alamat": {...},
-    "wali": {...}
+    "alamat": {
+      "namaAlamat": "Jl. Sudirman No. 123",
+      "provinsi": "DKI Jakarta",
+      "kota": "Jakarta Pusat",
+      "kecamatan": "Tanah Abang",
+      "kelurahan": "Bendungan Hilir",
+      "kodePos": "10210"
+    },
+    "wali": {
+      "jenisWali": "Ayah",
+      "namaLengkapWali": "Robert Doe",
+      "pekerjaanWali": "Pensiunan",
+      "nomorTeleponWali": "081298765432"
+    }
   }
 }
 ```
@@ -434,31 +321,10 @@ Customer login dengan email dan password
 }
 ```
 
-#### Rate Limit Response (429)
-```json
-{
-  "error": "Too many requests. Please try again later."
-}
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "email": "bostang.p@example.com",
-    "password": "Password123!"
-  }'
-```
-
 ---
 
-### 👤 **GET** `/auth/me`
+### 👤 **GET** `/api/auth/me`
 Get current authenticated user
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Headers
 ```
@@ -471,37 +337,33 @@ Cookie: authToken=<jwt-token>
   "authenticated": true,
   "customer": {
     "id": 1,
-    "namaLengkap": "Bostang Pejompongan",
-    "email": "bostang.p@example.com",
-    "nomorTelepon": "089651524900",
+    "namaLengkap": "John Doe",
+    "email": "john.doe@example.com",
+    "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
     "emailVerified": false,
-    "alamat": {...},
-    "wali": {...}
+    "alamat": {
+      "namaAlamat": "Jl. Sudirman No. 123",
+      "provinsi": "DKI Jakarta",
+      "kota": "Jakarta Pusat",
+      "kecamatan": "Tanah Abang",
+      "kelurahan": "Bendungan Hilir",
+      "kodePos": "10210"
+    },
+    "wali": {
+      "jenisWali": "Ayah",
+      "namaLengkapWali": "Robert Doe",
+      "pekerjaanWali": "Pensiunan",
+      "nomorTeleponWali": "081298765432"
+    }
   }
 }
 ```
 
-#### Unauthorized (401)
-```json
-{
-  "error": "Tidak terautentikasi"
-}
-```
-
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/auth/me \
-  -b cookies.txt
-```
-
 ---
 
-### 🚪 **POST** `/auth/logout`
+### 🚪 **POST** `/api/auth/logout`
 Logout user (clear cookie)
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Response (200) + Clear-Cookie
 ```json
@@ -510,24 +372,10 @@ Logout user (clear cookie)
 }
 ```
 
-**Clear-Cookie Header:**
-```
-Set-Cookie: authToken=; HttpOnly; Path=/; Max-Age=0; Domain=localhost
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/auth/logout \
-  -b cookies.txt
-```
-
 ---
 
-### 🔄 **POST** `/auth/refresh-token`
+### 🔄 **POST** `/api/auth/refresh-token`
 Refresh JWT token
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Headers
 ```
@@ -541,27 +389,10 @@ Cookie: authToken=<jwt-token>
 }
 ```
 
-#### Failed Response (401)
-```json
-{
-  "error": "Token tidak valid"
-}
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/auth/refresh-token \
-  -b cookies.txt \
-  -c cookies.txt
-```
-
 ---
 
-### ✅ **GET** `/auth/check-auth`
+### ✅ **GET** `/api/auth/check-auth`
 Check authentication status
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Headers
 ```
@@ -572,7 +403,7 @@ Cookie: authToken=<jwt-token>
 ```json
 {
   "authenticated": true,
-  "email": "bostang.p@example.com"
+  "email": "john.doe@example.com"
 }
 ```
 
@@ -583,31 +414,21 @@ Cookie: authToken=<jwt-token>
 }
 ```
 
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/auth/check-auth \
-  -b cookies.txt
-```
-
 ---
 
-## 3. VERIFICATION SERVICE (`/verification`) 🔍
-**🚨 Rate Limited: 10 requests/minute per IP**
+## 3. VERIFICATION SERVICE (`/api/verification`) 🔍
 
-### 🏥 **GET** `/verification/health`
+### 🏥 **GET** `/api/verification/health`
 Health check verification service
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Response (200)
 ```json
 {
   "status": "OK",
-  "service": "Verification Service (via Dukcapil Integration)",
+  "service": "Verification Service (Enhanced with tanggalLahir)",
   "timestamp": 1721120400000,
   "endpoints": {
-    "nikVerification": "POST /verification/nik",
+    "nikVerification": "POST /verification/nik (requires: nik, namaLengkap, tanggalLahir)",
     "emailVerification": "POST /verification/email",
     "phoneVerification": "POST /verification/phone",
     "nikCheck": "POST /verification/nik-check",
@@ -616,24 +437,17 @@ Health check verification service
 }
 ```
 
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/verification/health
-```
-
 ---
 
-### 🔍 **POST** `/verification/nik` ⭐ **MAIN ENDPOINT**
-Verifikasi NIK dengan nama lengkap via Dukcapil Service
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
+### 🔍 **POST** `/api/verification/nik` ⭐ **MAIN ENDPOINT**
+Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
 
 #### Request Body
 ```json
 {
-  "nik": "1234567890123456",
-  "namaLengkap": "Ahmad Fauzi"
+  "nik": "3175031234567890",
+  "namaLengkap": "John Doe",
+  "tanggalLahir": "1990-05-15"
 }
 ```
 
@@ -643,16 +457,16 @@ Verifikasi NIK dengan nama lengkap via Dukcapil Service
   "valid": true,
   "message": "NIK dan nama cocok",
   "data": {
-    "nik": "1234567890123456",
-    "namaLengkap": "Ahmad Fauzi",
+    "nik": "3175031234567890",
+    "namaLengkap": "John Doe",
     "tempatLahir": "Jakarta",
-    "tanggalLahir": "1995-07-10",
-    "jenisKelamin": "Laki-laki",
-    "alamat": "Jl. Melati No. 10",
-    "kecamatan": "Kebayoran Baru", 
-    "kelurahan": "Melawai",
-    "agama": "Islam",
-    "statusPerkawinan": "Belum Kawin"
+    "tanggalLahir": "1990-05-15",
+    "jenisKelamin": "LAKI_LAKI",
+    "alamat": "Jl. Sudirman No. 123, RT 001/RW 002",
+    "kecamatan": "Tanah Abang",
+    "kelurahan": "Bendungan Hilir",
+    "agama": "ISLAM",
+    "statusPerkawinan": "BELUM KAWIN"
   }
 }
 ```
@@ -661,36 +475,15 @@ Verifikasi NIK dengan nama lengkap via Dukcapil Service
 ```json
 {
   "valid": false,
-  "message": "NIK tidak terdaftar di database Dukcapil",
+  "message": "Data tidak cocok dengan database Dukcapil",
   "data": {}
 }
 ```
 
-#### Validation Error (400)
-```json
-{
-  "valid": false,
-  "message": "NIK harus 16 digit angka"
-}
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/verification/nik \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nik": "1234567890123456",
-    "namaLengkap": "Ahmad Fauzi"
-  }'
-```
-
 ---
 
-### 📧 **POST** `/verification/email`
+### 📧 **POST** `/api/verification/email`
 Verifikasi ketersediaan email
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Request Body
 ```json
@@ -708,29 +501,10 @@ Verifikasi ketersediaan email
 }
 ```
 
-#### Not Available Response (200)
-```json
-{
-  "available": false,
-  "message": "Email sudah digunakan",
-  "data": {}
-}
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/verification/email \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com"}'
-```
-
 ---
 
-### 📱 **POST** `/verification/phone`
+### 📱 **POST** `/api/verification/phone`
 Verifikasi ketersediaan nomor telepon
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Request Body
 ```json
@@ -748,25 +522,15 @@ Verifikasi ketersediaan nomor telepon
 }
 ```
 
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/verification/phone \
-  -H "Content-Type: application/json" \
-  -d '{"nomorTelepon": "081234567890"}'
-```
-
 ---
 
-### 🆔 **POST** `/verification/nik-check`
+### 🆔 **POST** `/api/verification/nik-check`
 Check NIK tanpa nama (simple check)
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Request Body
 ```json
 {
-  "nik": "1234567890123456"
+  "nik": "3175031234567890"
 }
 ```
 
@@ -778,36 +542,10 @@ Check NIK tanpa nama (simple check)
 }
 ```
 
-#### Not Registered Response (200)
-```json
-{
-  "registered": false,
-  "message": "NIK tidak terdaftar di database Dukcapil"
-}
-```
-
-#### Validation Error (400)
-```json
-{
-  "registered": false,
-  "message": "NIK harus 16 digit"
-}
-```
-
-#### cURL Example
-```bash
-curl -X POST http://localhost:8080/verification/nik-check \
-  -H "Content-Type: application/json" \
-  -d '{"nik": "1234567890123456"}'
-```
-
 ---
 
-### 📊 **GET** `/verification/stats`
+### 📊 **GET** `/api/verification/stats`
 Verification statistics
-
-#### Rate Limit
-- **Limit:** 10 requests per minute per IP
 
 #### Response (200)
 ```json
@@ -824,37 +562,37 @@ Verification statistics
 }
 ```
 
-#### cURL Example
-```bash
-curl -X GET http://localhost:8080/verification/stats
-```
+---
+
+## 🗂 Endpoint Summary
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| **Registration Management** |
+| GET | `/api/registration/health` | Health check | ❌ |
+| POST | `/api/registration/register` | Customer registration + auto login | ❌ |
+| POST | `/api/registration/check-password` | Password strength check | ❌ |
+| POST | `/api/registration/validate-nik` | NIK format validation | ❌ |
+| POST | `/api/registration/verify-email` | Email verification | ❌ |
+| GET | `/api/registration/stats` | Registration statistics | ❌ |
+| GET | `/api/registration/profile` | Customer profile | ✅ |
+| **Authentication** |
+| POST | `/api/auth/login` | Customer login | ❌ |
+| GET | `/api/auth/me` | Current user info | ✅ |
+| POST | `/api/auth/logout` | Logout user | ✅ |
+| POST | `/api/auth/refresh-token` | Refresh JWT token | ✅ |
+| GET | `/api/auth/check-auth` | Check auth status | ✅ |
+| **Verification Service** |
+| GET | `/api/verification/health` | Health check | ❌ |
+| POST | `/api/verification/nik` | NIK + name + birthdate verification | ❌ |
+| POST | `/api/verification/email` | Email availability check | ❌ |
+| POST | `/api/verification/phone` | Phone availability check | ❌ |
+| POST | `/api/verification/nik-check` | NIK existence check | ❌ |
+| GET | `/api/verification/stats` | Verification statistics | ❌ |
 
 ---
 
 ## 🔧 Configuration & Security
-
-### Rate Limiting Configuration
-```properties
-# application.properties
-app.rateLimit.enabled=true
-app.rateLimit.capacity=10          # Max 10 requests
-app.rateLimit.refillRate=2         # Refill 2 requests per minute
-```
-
-### Dukcapil Client Configuration
-```properties
-# application.properties
-app.dukcapil.timeout=10000         # 10 seconds timeout
-```
-
-### CORS Configuration
-```java
-// All controllers
-@CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
-
-# application.properties
-app.cors.allowed-origins=http://localhost:3000,http://localhost:5173
-```
 
 ### Cookie Configuration
 - **Name:** `authToken`
@@ -868,123 +606,3 @@ app.cors.allowed-origins=http://localhost:3000,http://localhost:5173
 - **Dukcapil Service:** `http://localhost:8081` (NIK verification)
 - **Database:** PostgreSQL for customer data
 - **JWT:** Token-based authentication
-- **Bucket4j:** Rate limiting implementation
-
----
-
-## 📊 Data Models
-
-### Complete Registration Request
-```json
-{
-  "namaLengkap": "string",
-  "namaIbuKandung": "string",
-  "nomorTelepon": "string",
-  "email": "string (unique)",
-  "password": "string",
-  "tipeAkun": "string",
-  "tempatLahir": "string",
-  "tanggalLahir": "YYYY-MM-DD",
-  "jenisKelamin": "Laki-laki | Perempuan",
-  "agama": "string",
-  "statusPernikahan": "string",
-  "pekerjaan": "string",
-  "sumberPenghasilan": "string",
-  "rentangGaji": "string",
-  "tujuanPembuatanRekening": "string",
-  "kodeRekening": "integer",
-  "alamat": {
-    "namaAlamat": "string",
-    "provinsi": "string",
-    "kota": "string",
-    "kecamatan": "string",
-    "kelurahan": "string",
-    "kodePos": "string"
-  },
-  "wali": {
-    "jenisWali": "Ayah | Ibu",
-    "namaLengkapWali": "string",
-    "pekerjaanWali": "string",
-    "alamatWali": "string",
-    "nomorTeleponWali": "string"
-  }
-}
-```
-
----
-
-## 🗂 Endpoint Summary (Final & Synced)
-
-| Method | Endpoint | Description | Auth Required | Rate Limited |
-|--------|----------|-------------|---------------|--------------|
-| **Registration Management** |
-| GET | `/registration/health` | Health check | ❌ | ❌ |
-| POST | `/registration/register` | Customer registration + auto login | ❌ | ❌ |
-| POST | `/registration/check-password` | Password strength check | ❌ | ❌ |
-| POST | `/registration/validate-nik` | NIK format validation | ❌ | ❌ |
-| POST | `/registration/verify-email` | Email verification | ❌ | ❌ |
-| GET | `/registration/stats` | Registration statistics | ❌ | ❌ |
-| GET | `/registration/profile` | Customer profile | ✅ | ❌ |
-| **Authentication** |
-| POST | `/auth/login` | Customer login | ❌ | ✅ |
-| GET | `/auth/me` | Current user info | ✅ | ✅ |
-| POST | `/auth/logout` | Logout user | ✅ | ✅ |
-| POST | `/auth/refresh-token` | Refresh JWT token | ✅ | ✅ |
-| GET | `/auth/check-auth` | Check auth status | ✅ | ✅ |
-| **Verification Service** |
-| GET | `/verification/health` | Health check | ❌ | ✅ |
-| POST | `/verification/nik` | NIK + name verification | ❌ | ✅ |
-| POST | `/verification/email` | Email availability check | ❌ | ✅ |
-| POST | `/verification/phone` | Phone availability check | ❌ | ✅ |
-| POST | `/verification/nik-check` | NIK existence check | ❌ | ✅ |
-| GET | `/verification/stats` | Verification statistics | ❌ | ✅ |
-
----
-
-## 🚀 Testing Guide
-
-### Test Rate Limiting
-```bash
-# Test rate limited endpoint (should get 429 after 10 requests)
-for i in {1..12}; do
-  echo "Request $i:"
-  curl -X POST http://localhost:8080/auth/login \
-    -H "Content-Type: application/json" \
-    -d '{"email":"test@test.com","password":"wrong"}' \
-    -w "Status: %{http_code}\n"
-  sleep 1
-done
-```
-
-### Test Non-Rate Limited
-```bash
-# Test non-rate limited endpoint (should always work)
-for i in {1..15}; do
-  echo "Request $i:"
-  curl -X POST http://localhost:8080/registration/check-password \
-    -H "Content-Type: application/json" \
-    -d '{"password":"test123"}' \
-    -w "Status: %{http_code}\n"
-done
-```
-
-### Complete Registration Flow
-```bash
-# 1. Check health
-curl http://localhost:8080/registration/health
-
-# 2. Register customer (gets auto-login cookie)
-curl -X POST http://localhost:8080/registration/register \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{ ... complete registration data ... }'
-
-# 3. Check profile (using cookie from registration)
-curl -X GET http://localhost:8080/registration/profile \
-  -b cookies.txt
-
-# 4. Verify NIK
-curl -X POST http://localhost:8080/verification/nik \
-  -H "Content-Type: application/json" \
-  -d '{"nik":"1234567890123456","namaLengkap":"Ahmad Fauzi"}'
-```

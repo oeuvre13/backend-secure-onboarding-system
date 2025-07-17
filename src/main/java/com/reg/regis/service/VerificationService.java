@@ -21,17 +21,18 @@ public class VerificationService {
     private DukcapilClientService dukcapilClientService;
     
     /**
-     * Verifikasi NIK dengan nama lengkap via Dukcapil Service
+     * Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
      */
     @Transactional(readOnly = true)
     public VerificationResponse verifyNik(NikVerificationRequest request) {
         try {
-            System.out.println("🔍 Starting NIK verification for: " + request.getNik());
+            System.out.println("🔍 Starting NIK verification with full data: " + request);
             
-            // Call Dukcapil Service via HTTP
-            DukcapilResponseDto dukcapilResponse = dukcapilClientService.verifyNikAndName(
+            // Call Dukcapil Service dengan SEMUA field
+            DukcapilResponseDto dukcapilResponse = dukcapilClientService.verifyNikNameAndBirthDate(
                 request.getNik(), 
-                request.getNamaLengkap()
+                request.getNamaLengkap(),
+                request.getTanggalLahir()
             );
             
             if (dukcapilResponse.isValid()) {

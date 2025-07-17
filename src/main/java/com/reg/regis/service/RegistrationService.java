@@ -36,10 +36,11 @@ public class RegistrationService {
             throw new RuntimeException("Dukcapil service tidak tersedia. Silakan coba lagi nanti.");
         }
         
-        // 2. VALIDASI NIK DAN NAMA VIA DUKCAPIL SERVICE
-        DukcapilResponseDto dukcapilResponse = dukcapilClientService.verifyNikAndName(
+        // 2. VALIDASI NIK, NAMA, DAN TANGGAL LAHIR VIA DUKCAPIL SERVICE
+        DukcapilResponseDto dukcapilResponse = dukcapilClientService.verifyNikNameAndBirthDate(
             request.getNik(), 
-            request.getNamaLengkap()
+            request.getNamaLengkap(),
+            request.getTanggalLahir()
         );
         
         if (!dukcapilResponse.isValid()) {
@@ -129,10 +130,10 @@ public class RegistrationService {
     }
     
     /**
-     * Validasi NIK dan nama via Dukcapil service (untuk preview)
+     * Validasi NIK, nama, dan tanggal lahir via Dukcapil service (untuk preview)
      */
-    public DukcapilResponseDto validateNikAndName(String nik, String namaLengkap) {
-        return dukcapilClientService.verifyNikAndName(nik, namaLengkap);
+    public DukcapilResponseDto validateNikNameAndBirthDate(String nik, String namaLengkap, java.time.LocalDate tanggalLahir) {
+        return dukcapilClientService.verifyNikNameAndBirthDate(nik, namaLengkap, tanggalLahir);
     }
     
     /**
