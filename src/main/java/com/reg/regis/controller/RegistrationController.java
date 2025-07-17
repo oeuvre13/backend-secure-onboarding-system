@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/registration") 
+@RequestMapping("/auth") 
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class RegistrationController {
     
@@ -145,13 +145,13 @@ public class RegistrationController {
                 "verificationRate", stats.getVerificationRate() + "%"
             ),
             "endpoints", Map.of(
-                "register", "POST /registration/register",
-                "checkPassword", "POST /registration/check-password",
-                "validateNik", "POST /registration/validate-nik",
-                "verifyEmail", "POST /registration/verify-email",
-                "stats", "GET /registration/stats",
-                "health", "GET /registration/health",
-                "profile", "GET /registration/profile"
+                "register", "POST /auth/register",
+                "checkPassword", "POST /auth/check-password",
+                "validateNik", "POST /auth/validate-nik",
+                "verifyEmail", "POST /auth/verify-email",
+                "stats", "GET /auth/stats",
+                "health", "GET /auth/health",
+                "profile", "GET /auth/profile"
             )
         ));
     }

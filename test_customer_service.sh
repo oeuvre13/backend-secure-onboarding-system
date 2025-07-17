@@ -2,7 +2,7 @@
 
 # 1. Health Checks
 curl -X GET http://localhost:8080/api/auth/health           # LoginController
-curl -X GET http://localhost:8080/api/registration/health   # RegistrationController  
+curl -X GET http://localhost:8080/api/auth/health   # RegistrationController  
 curl -X GET http://localhost:8080/api/verification/health   # VerificationController
 
 # 2. NIK Verification (via Dukcapil Service)
@@ -14,7 +14,7 @@ curl -X POST http://localhost:8080/api/verification/nik \
   }'
 
 # 3. Registration (NEW URL)
-curl -X POST http://localhost:8080/api/registration/register \
+curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "John Doe",
@@ -60,14 +60,14 @@ curl -X POST http://localhost:8080/api/auth/login \
   }'
 
 # 5. Check Password Strength (NEW URL)
-curl -X POST http://localhost:8080/api/registration/check-password \
+curl -X POST http://localhost:8080/api/auth/check-password \
   -H "Content-Type: application/json" \
   -d '{
     "password": "SecurePass123!"
   }'
 
 # 6. Validate NIK Format (NEW URL)
-curl -X POST http://localhost:8080/api/registration/validate-nik \
+curl -X POST http://localhost:8080/api/auth/validate-nik \
   -H "Content-Type: application/json" \
   -d '{
     "nik": "3175031234567890"
@@ -80,7 +80,7 @@ curl -X GET http://localhost:8080/api/auth/me
 curl -X POST http://localhost:8080/api/auth/logout
 
 # 9. Get Statistics (Multiple endpoints)
-curl -X GET http://localhost:8080/api/registration/stats     # Registration stats
+curl -X GET http://localhost:8080/api/auth/stats     # Registration stats
 curl -X GET http://localhost:8080/api/verification/stats     # Verification stats
 
 # 10. Email Verification

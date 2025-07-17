@@ -1138,12 +1138,12 @@ nano .env
 
 ## 🔗 API Endpoints
 
-- `POST /api/registration/register` - Customer registration
+- `POST /api/auth/register` - Customer registration
 - `POST /api/auth/login` - Customer login
 - `POST /api/verification/nik` - NIK verification
 
 ### Health Checks
-- `GET /api/registration/health`
+- `GET /api/auth/health`
 - `GET /api/auth/health`
 - `GET /api/verification/health`
 
@@ -1157,7 +1157,7 @@ nano .env
 
 ```bash
 # Test health
-curl http://localhost:8080/api/registration/health
+curl http://localhost:8080/api/auth/health
 
 # Test NIK verification
 curl -X POST "http://localhost:8080/api/verification/nik" \
@@ -1205,12 +1205,12 @@ nano .env
 
 ## 🔗 API Endpoints
 
-- `POST /api/registration/register` - Customer registration
+- `POST /api/auth/register` - Customer registration
 - `POST /api/auth/login` - Customer login
 - `POST /api/verification/nik` - NIK verification
 
 ### Health Checks
-- `GET /api/registration/health`
+- `GET /api/auth/health`
 - `GET /api/auth/health`
 - `GET /api/verification/health`
 
@@ -1224,7 +1224,7 @@ nano .env
 
 ```bash
 # Test health
-curl http://localhost:8080/api/registration/health
+curl http://localhost:8080/api/auth/health
 
 # Test NIK verification
 curl -X POST "http://localhost:8080/api/verification/nik" \
@@ -1262,7 +1262,7 @@ show_final_instructions() {
     echo -e "     ./scripts/run.sh"
     echo ""
     echo -e "${YELLOW}🔗 Test endpoints:${NC}"
-    echo -e "  ${BLUE}http://localhost:8080/api/registration/health${NC}"
+    echo -e "  ${BLUE}http://localhost:8080/api/auth/health${NC}"
     echo -e "  ${BLUE}http://localhost:8080/api/auth/health${NC}"
     echo -e "  ${BLUE}http://localhost:8080/api/verification/health${NC}"
     echo ""

@@ -20,7 +20,7 @@
 
 ## 1. REGISTRATION MANAGEMENT (`/api/registration`) 📝
 
-### 🏥 **GET** `/api/registration/health`
+### 🏥 **GET** `/api/auth/health`
 Health check untuk registration service
 
 #### Response (200)
@@ -39,13 +39,13 @@ Health check untuk registration service
     "verificationRate": "90%"
   },
   "endpoints": {
-    "register": "POST /registration/register",
-    "checkPassword": "POST /registration/check-password",
-    "validateNik": "POST /registration/validate-nik",
-    "verifyEmail": "POST /registration/verify-email",
-    "stats": "GET /registration/stats",
-    "health": "GET /registration/health",
-    "profile": "GET /registration/profile"
+    "register": "POST /auth/register",
+    "checkPassword": "POST /auth/check-password",
+    "validateNik": "POST /auth/validate-nik",
+    "verifyEmail": "POST /auth/verify-email",
+    "stats": "GET /auth/stats",
+    "health": "GET /auth/health",
+    "profile": "GET /auth/profile"
   },
   "jenisKartu": {
     "available": ["Silver", "Gold", "Platinum", "Batik Air"],
@@ -56,7 +56,7 @@ Health check untuk registration service
 
 ---
 
-### 📝 **POST** `/api/registration/register` ⭐ **MAIN ENDPOINT**
+### 📝 **POST** `/api/auth/register` ⭐ **MAIN ENDPOINT**
 Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
 #### Request Body - **UPDATED dengan JenisKartu**
@@ -164,7 +164,7 @@ Set-Cookie: authToken=<jwt-token>; HttpOnly; Path=/; Max-Age=86400; Domain=local
 
 ---
 
-### 🔑 **POST** `/api/registration/check-password`
+### 🔑 **POST** `/api/auth/check-password`
 Check password strength
 
 #### Request Body
@@ -183,7 +183,7 @@ Check password strength
 
 ---
 
-### ✅ **POST** `/api/registration/validate-nik`
+### ✅ **POST** `/api/auth/validate-nik`
 Validasi format NIK
 
 #### Request Body
@@ -204,7 +204,7 @@ Validasi format NIK
 
 ---
 
-### 📧 **POST** `/api/registration/verify-email`
+### 📧 **POST** `/api/auth/verify-email`
 Verify customer email
 
 #### Request Body
@@ -223,7 +223,7 @@ Verify customer email
 
 ---
 
-### 📊 **GET** `/api/registration/stats`
+### 📊 **GET** `/api/auth/stats`
 Registration statistics - **UPDATED dengan JenisKartu breakdown**
 
 #### Response (200)
@@ -246,7 +246,7 @@ Registration statistics - **UPDATED dengan JenisKartu breakdown**
 
 ---
 
-### 👤 **GET** `/api/registration/profile`
+### 👤 **GET** `/api/auth/profile`
 Get customer profile (requires authentication) - **UPDATED**
 
 #### Headers
@@ -598,13 +598,13 @@ Verification statistics
 | Method | Endpoint | Description | Auth Required | JenisKartu |
 |--------|----------|-------------|---------------|------------|
 | **Registration Management** |
-| GET | `/api/registration/health` | Health check | ❌ | N/A |
-| POST | `/api/registration/register` | Customer registration + auto login | ❌ | **Required** |
-| POST | `/api/registration/check-password` | Password strength check | ❌ | N/A |
-| POST | `/api/registration/validate-nik` | NIK format validation | ❌ | N/A |
-| POST | `/api/registration/verify-email` | Email verification | ❌ | N/A |
-| GET | `/api/registration/stats` | Registration statistics | ❌ | **Breakdown** |
-| GET | `/api/registration/profile` | Customer profile | ✅ | **Included** |
+| GET | `/api/auth/health` | Health check | ❌ | N/A |
+| POST | `/api/auth/register` | Customer registration + auto login | ❌ | **Required** |
+| POST | `/api/auth/check-password` | Password strength check | ❌ | N/A |
+| POST | `/api/auth/validate-nik` | NIK format validation | ❌ | N/A |
+| POST | `/api/auth/verify-email` | Email verification | ❌ | N/A |
+| GET | `/api/auth/stats` | Registration statistics | ❌ | **Breakdown** |
+| GET | `/api/auth/profile` | Customer profile | ✅ | **Included** |
 | **Authentication** |
 | POST | `/api/auth/login` | Customer login | ❌ | **Returned** |
 | GET | `/api/auth/me` | Current user info | ✅ | **Included** |
@@ -892,7 +892,7 @@ CREATE INDEX idx_customers_created_at ON customers(created_at);
 
 ## 📊 Analytics & Reporting Endpoints
 
-### **GET** `/api/registration/analytics/card-distribution`
+### **GET** `/api/auth/analytics/card-distribution`
 Get distribution of customers by card type
 
 #### Response (200)
@@ -922,7 +922,7 @@ Get distribution of customers by card type
 }
 ```
 
-### **GET** `/api/registration/analytics/monthly-registrations`
+### **GET** `/api/auth/analytics/monthly-registrations`
 Get monthly registration statistics by card type
 
 #### Query Parameters

@@ -6,7 +6,7 @@ curl -X GET "http://localhost:8080/api/auth/health" \
 
 # 2. Registration (Create Test User)
 # 1. Test Register Customer (POST /auth/register)
-curl -X POST http://localhost:8080/api/registration/register \
+curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "John Doe",

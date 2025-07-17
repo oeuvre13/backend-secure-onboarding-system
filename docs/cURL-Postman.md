@@ -11,7 +11,7 @@
 ### 1. Health Checks
 ```bash
 echo "📊 Health Checks:"
-curl -X GET "http://localhost:8080/api/registration/health" | jq
+curl -X GET "http://localhost:8080/api/auth/health" | jq
 curl -X GET "http://localhost:8080/api/auth/health" | jq  
 curl -X GET "http://localhost:8080/api/verification/health" | jq
 ```
@@ -100,12 +100,12 @@ curl -X POST "http://localhost:8080/api/verification/phone" \
 ### 5. Validation Tests
 ```bash
 echo "✅ NIK Format Validation:"
-curl -X POST "http://localhost:8080/api/registration/validate-nik" \
+curl -X POST "http://localhost:8080/api/auth/validate-nik" \
   -H "Content-Type: application/json" \
   -d '{"nik": "3175031234567890"}' | jq
 
 echo "🔒 Password Strength Check:"
-curl -X POST "http://localhost:8080/api/registration/check-password" \
+curl -X POST "http://localhost:8080/api/auth/check-password" \
   -H "Content-Type: application/json" \
   -d '{"password": "JohnDoe123!"}' | jq
 ```
@@ -113,7 +113,7 @@ curl -X POST "http://localhost:8080/api/registration/check-password" \
 ### 6. Customer Registration (Main Test) - **UPDATED dengan JenisKartu**
 ```bash
 echo "👤 Registration Test - John Doe (Silver):"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -152,7 +152,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
   }' | jq
 
 echo "👤 Registration Test - Jane Smith (Gold):"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -192,7 +192,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
   }' | jq
 
 echo "👤 Registration Test - Foreign Customer (Platinum):"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -232,7 +232,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
   }' | jq
 
 echo "👤 Registration Test - Batik Air Customer:"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -275,7 +275,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
 ### 7. Profile Access (Auto-login test)
 ```bash
 echo "👤 Profile Access Tests:"
-curl -X GET "http://localhost:8080/api/registration/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
 ```
 
@@ -330,7 +330,7 @@ curl -X POST "http://localhost:8080/api/auth/logout" \
 ### 10. Statistics
 ```bash
 echo "📊 Statistics:"
-curl -X GET "http://localhost:8080/api/registration/stats" | jq
+curl -X GET "http://localhost:8080/api/auth/stats" | jq
 curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ```
 
@@ -360,7 +360,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ## 📋 **Collection Structure**
 
 ### **1. Health Checks**
-- **GET** `{{base_url}}/registration/health`
+- **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/verification/health`
 
@@ -368,7 +368,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Register Customer (KTP)**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/register`
+- **URL:** `{{base_url}}/auth/register`
 - **Headers:**
   ```
   Content-Type: application/json
@@ -414,7 +414,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Register Foreign Customer (Passport)**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/register`
+- **URL:** `{{base_url}}/auth/register`
 - **Body (raw JSON):**
   ```json
   {
@@ -456,7 +456,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 
 #### **Register KITAS Holder**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/register`
+- **URL:** `{{base_url}}/auth/register`
 - **Body (raw JSON):**
   ```json
   {
@@ -576,7 +576,7 @@ echo "❌ VALIDATION ERROR TESTS untuk JenisKartu"
 
 # 1. Invalid JenisKartu
 echo "Testing Invalid JenisKartu:"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "Test User",
@@ -590,7 +590,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
 
 # 2. Missing JenisKartu
 echo "Testing Missing JenisKartu:"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "Test User",
@@ -603,7 +603,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
 
 # 3. Empty JenisKartu
 echo "Testing Empty JenisKartu:"
-curl -X POST "http://localhost:8080/api/registration/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "Test User",
