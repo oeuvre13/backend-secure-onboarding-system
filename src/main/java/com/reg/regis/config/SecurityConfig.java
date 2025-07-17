@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // Tambahkan ini
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,7 +26,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // **TAMBAHKAN INI** - Untuk mengaktifkan @PreAuthorize di metode controller
+@EnableMethodSecurity //  Untuk mengaktifkan @PreAuthorize di metode controller
 public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
@@ -49,7 +50,8 @@ public class SecurityConfig {
                 .requestMatchers("/verification/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("OPTIONS", "/**").permitAll()
+                // .requestMatchers("OPTIONS", "/**").permitAll()           // give warning
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Explicitly use HttpMethod.OPTIONS
                 .requestMatchers("/api/**").authenticated() // **TAMBAHKAN INI**: Lindungi semua endpoint di bawah /api/
                 .anyRequest().authenticated() // **UBAH INI (opsional)**: Ganti .permitAll() menjadi .authenticated() jika semua jalur lain harus dilindungi secara default. Jika tidak, tetap .permitAll()
             )
@@ -95,10 +97,19 @@ public class SecurityConfig {
     // **TAMBAHKAN INI**: Bean untuk AuthenticationProvider
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService); // Gunakan UserDetailsService kustom Anda
+        // DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        // authProvider.setUserDetailsService(userDetailsService); // Gunakan UserDetailsService kustom Anda
+        // authProvider.setPasswordEncoder(passwordEncoder());
+        // return authProvider;
+
+        /**** SECURITY PATCH ****/
+        // Pass userDetailsService and passwordEncoder directly into the constructor
+        // No need for separate setter calls.
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
+        
+        /************************/
     }
 
     // **TAMBAHKAN INI**: Bean untuk AuthenticationManager

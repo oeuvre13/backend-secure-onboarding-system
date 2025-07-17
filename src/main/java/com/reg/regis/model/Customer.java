@@ -99,11 +99,13 @@ public class Customer {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
     
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "alamat_id")
     private Alamat alamat;
     
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "wali_id", nullable = true)
     private Wali wali;
     

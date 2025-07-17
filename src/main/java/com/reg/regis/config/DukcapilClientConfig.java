@@ -17,8 +17,10 @@ public class DukcapilClientConfig {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(timeout))
-                .setReadTimeout(Duration.ofMillis(timeout))
+                // .setConnectTimeout(Duration.ofMillis(timeout))       // deprecated
+                // .setReadTimeout(Duration.ofMillis(timeout))          // deprecated
+                .connectTimeout(Duration.ofMillis(timeout))
+                .readTimeout(Duration.ofMillis(timeout))
                 .build();
     }
     
