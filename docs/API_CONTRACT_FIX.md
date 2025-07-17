@@ -46,6 +46,10 @@ Health check untuk registration service
     "stats": "GET /registration/stats",
     "health": "GET /registration/health",
     "profile": "GET /registration/profile"
+  },
+  "jenisKartu": {
+    "available": ["Silver", "Gold", "Platinum", "Batik Air"],
+    "description": "Available card types for customer registration"
   }
 }
 ```
@@ -55,7 +59,7 @@ Health check untuk registration service
 ### 📝 **POST** `/api/registration/register` ⭐ **MAIN ENDPOINT**
 Registrasi customer baru dengan validasi Dukcapil + Auto Login
 
-#### Request Body
+#### Request Body - **UPDATED dengan JenisKartu**
 ```json
 {
   "namaLengkap": "John Doe",
@@ -65,6 +69,7 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
   "email": "john.doe@example.com",
   "password": "JohnDoe123!",
   "tipeAkun": "BNI Taplus",
+  "jenisKartu": "Silver",
   "tempatLahir": "Jakarta",
   "tanggalLahir": "1990-05-15",
   "jenisKelamin": "Laki-laki",
@@ -93,7 +98,19 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 }
 ```
 
-#### Success Response (200) + Set-Cookie
+#### JenisKartu Field Details
+- **Field Name:** `jenisKartu`
+- **Type:** String
+- **Required:** Yes
+- **Valid Values:** 
+  - `"Silver"` - Basic card level
+  - `"Gold"` - Premium card level  
+  - `"Platinum"` - Premium plus card level
+  - `"Batik Air"` - Airline partnership card
+- **Validation:** Must be one of the valid values above
+- **Default:** None (field is required)
+
+#### Success Response (200) + Set-Cookie - **UPDATED**
 ```json
 {
   "success": true,
@@ -105,6 +122,7 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
     "email": "john.doe@example.com",
     "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Silver",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
@@ -130,11 +148,11 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
 }
 ```
 
-#### Validation Error (400)
+#### Validation Error (400) - **NEW JenisKartu Errors**
 ```json
 {
   "success": false,
-  "error": "Email sudah terdaftar dalam sistem",
+  "error": "Jenis kartu tidak valid. Pilihan yang tersedia: Silver, Gold, Platinum, Batik Air",
   "type": "validation_error"
 }
 ```
@@ -206,7 +224,7 @@ Verify customer email
 ---
 
 ### 📊 **GET** `/api/registration/stats`
-Registration statistics
+Registration statistics - **UPDATED dengan JenisKartu breakdown**
 
 #### Response (200)
 ```json
@@ -215,14 +233,21 @@ Registration statistics
   "verifiedCustomers": 135,
   "verificationRate": 90.0,
   "dukcapilServiceUrl": "http://localhost:8081",
-  "dukcapilServiceAvailable": true
+  "dukcapilServiceAvailable": true,
+  "jenisKartuBreakdown": {
+    "Silver": 45,
+    "Gold": 38,
+    "Platinum": 32,
+    "Batik Air": 35
+  },
+  "popularCardType": "Silver"
 }
 ```
 
 ---
 
 ### 👤 **GET** `/api/registration/profile`
-Get customer profile (requires authentication)
+Get customer profile (requires authentication) - **UPDATED**
 
 #### Headers
 ```
@@ -239,6 +264,7 @@ Cookie: authToken=<jwt-token>
     "email": "john.doe@example.com",
     "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Silver",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
@@ -279,7 +305,7 @@ Customer login dengan email dan password
 }
 ```
 
-#### Success Response (200) + Set-Cookie
+#### Success Response (200) + Set-Cookie - **UPDATED**
 ```json
 {
   "message": "Login berhasil",
@@ -289,6 +315,7 @@ Customer login dengan email dan password
     "email": "john.doe@example.com",
     "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Silver",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
@@ -324,7 +351,7 @@ Customer login dengan email dan password
 ---
 
 ### 👤 **GET** `/api/auth/me`
-Get current authenticated user
+Get current authenticated user - **UPDATED**
 
 #### Headers
 ```
@@ -341,6 +368,7 @@ Cookie: authToken=<jwt-token>
     "email": "john.doe@example.com",
     "nomorTelepon": "081234567890",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Silver",
     "emailVerified": false,
     "alamat": {
       "namaAlamat": "Jl. Sudirman No. 123",
@@ -403,7 +431,8 @@ Cookie: authToken=<jwt-token>
 ```json
 {
   "authenticated": true,
-  "email": "john.doe@example.com"
+  "email": "john.doe@example.com",
+  "jenisKartu": "Silver"
 }
 ```
 
@@ -564,31 +593,31 @@ Verification statistics
 
 ---
 
-## 🗂 Endpoint Summary
+## 🗂 Endpoint Summary - **UPDATED**
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
+| Method | Endpoint | Description | Auth Required | JenisKartu |
+|--------|----------|-------------|---------------|------------|
 | **Registration Management** |
-| GET | `/api/registration/health` | Health check | ❌ |
-| POST | `/api/registration/register` | Customer registration + auto login | ❌ |
-| POST | `/api/registration/check-password` | Password strength check | ❌ |
-| POST | `/api/registration/validate-nik` | NIK format validation | ❌ |
-| POST | `/api/registration/verify-email` | Email verification | ❌ |
-| GET | `/api/registration/stats` | Registration statistics | ❌ |
-| GET | `/api/registration/profile` | Customer profile | ✅ |
+| GET | `/api/registration/health` | Health check | ❌ | N/A |
+| POST | `/api/registration/register` | Customer registration + auto login | ❌ | **Required** |
+| POST | `/api/registration/check-password` | Password strength check | ❌ | N/A |
+| POST | `/api/registration/validate-nik` | NIK format validation | ❌ | N/A |
+| POST | `/api/registration/verify-email` | Email verification | ❌ | N/A |
+| GET | `/api/registration/stats` | Registration statistics | ❌ | **Breakdown** |
+| GET | `/api/registration/profile` | Customer profile | ✅ | **Included** |
 | **Authentication** |
-| POST | `/api/auth/login` | Customer login | ❌ |
-| GET | `/api/auth/me` | Current user info | ✅ |
-| POST | `/api/auth/logout` | Logout user | ✅ |
-| POST | `/api/auth/refresh-token` | Refresh JWT token | ✅ |
-| GET | `/api/auth/check-auth` | Check auth status | ✅ |
+| POST | `/api/auth/login` | Customer login | ❌ | **Returned** |
+| GET | `/api/auth/me` | Current user info | ✅ | **Included** |
+| POST | `/api/auth/logout` | Logout user | ✅ | N/A |
+| POST | `/api/auth/refresh-token` | Refresh JWT token | ✅ | N/A |
+| GET | `/api/auth/check-auth` | Check auth status | ✅ | **Included** |
 | **Verification Service** |
-| GET | `/api/verification/health` | Health check | ❌ |
-| POST | `/api/verification/nik` | NIK + name + birthdate verification | ❌ |
-| POST | `/api/verification/email` | Email availability check | ❌ |
-| POST | `/api/verification/phone` | Phone availability check | ❌ |
-| POST | `/api/verification/nik-check` | NIK existence check | ❌ |
-| GET | `/api/verification/stats` | Verification statistics | ❌ |
+| GET | `/api/verification/health` | Health check | ❌ | N/A |
+| POST | `/api/verification/nik` | NIK + name + birthdate verification | ❌ | N/A |
+| POST | `/api/verification/email` | Email availability check | ❌ | N/A |
+| POST | `/api/verification/phone` | Phone availability check | ❌ | N/A |
+| POST | `/api/verification/nik-check` | NIK existence check | ❌ | N/A |
+| GET | `/api/verification/stats` | Verification statistics | ❌ | N/A |
 
 ---
 
@@ -602,7 +631,359 @@ Verification statistics
 - **Domain:** `localhost` (development)
 - **Max-Age:** `86400` seconds (24 hours)
 
+### JenisKartu Configuration - **NEW**
+- **Valid Values:** `["Silver", "Gold", "Platinum", "Batik Air"]`
+- **Required:** Yes (for registration)
+- **Case Sensitive:** Yes
+- **Default Value:** None (must be explicitly provided)
+- **Database Column:** `VARCHAR(20) NOT NULL`
+
 ### External Dependencies
 - **Dukcapil Service:** `http://localhost:8081` (NIK verification)
 - **Database:** PostgreSQL for customer data
 - **JWT:** Token-based authentication
+
+---
+
+## 🎯 JenisKartu Business Rules
+
+### Card Type Descriptions
+- **Silver:** Entry-level card with basic features
+- **Gold:** Premium card with enhanced benefits
+- **Platinum:** Top-tier card with exclusive privileges
+- **Batik Air:** Partnership card with airline-specific benefits
+
+### Card Type Features (Business Logic)
+```json
+{
+  "Silver": {
+    "withdrawalLimit": 5000000,
+    "transferLimit": 10000000,
+    "annualFee": 0,
+    "benefits": ["ATM access", "Mobile banking", "Basic insurance"]
+  },
+  "Gold": {
+    "withdrawalLimit": 10000000,
+    "transferLimit": 25000000,
+    "annualFee": 100000,
+    "benefits": ["ATM access", "Mobile banking", "Travel insurance", "Cashback 1%"]
+  },
+  "Platinum": {
+    "withdrawalLimit": 25000000,
+    "transferLimit": 100000000,
+    "annualFee": 500000,
+    "benefits": ["ATM access", "Mobile banking", "Comprehensive insurance", "Cashback 2%", "Airport lounge access"]
+  },
+  "Batik Air": {
+    "withdrawalLimit": 15000000,
+    "transferLimit": 50000000,
+    "annualFee": 250000,
+    "benefits": ["ATM access", "Mobile banking", "Flight discounts", "Miles earning", "Priority check-in"]
+  }
+}
+```
+
+---
+
+## 📝 Sample Registration Requests by Card Type
+
+### Silver Card Registration
+```json
+{
+  "namaLengkap": "Ahmad Santosa",
+  "nik": "3175031234567890",
+  "namaIbuKandung": "Siti Santosa",
+  "nomorTelepon": "081234567890",
+  "email": "ahmad.santosa@example.com",
+  "password": "Ahmad123!",
+  "tipeAkun": "BNI Taplus",
+  "jenisKartu": "Silver",
+  "tempatLahir": "Jakarta",
+  "tanggalLahir": "1990-05-15",
+  "jenisKelamin": "Laki-laki",
+  "agama": "Islam",
+  "statusPernikahan": "Belum Kawin",
+  "pekerjaan": "Karyawan",
+  "sumberPenghasilan": "Gaji",
+  "rentangGaji": "3-5 juta",
+  "tujuanPembuatanRekening": "Tabungan",
+  "kodeRekening": 1001
+}
+```
+
+### Gold Card Registration
+```json
+{
+  "namaLengkap": "Maria Putri",
+  "nik": "3175032345678901",
+  "namaIbuKandung": "Elena Putri",
+  "nomorTelepon": "081234567891",
+  "email": "maria.putri@example.com",
+  "password": "Maria123!",
+  "tipeAkun": "BNI Taplus Gold",
+  "jenisKartu": "Gold",
+  "tempatLahir": "Surabaya",
+  "tanggalLahir": "1985-08-22",
+  "jenisKelamin": "Perempuan",
+  "agama": "Kristen",
+  "statusPernikahan": "Kawin",
+  "pekerjaan": "Manager",
+  "sumberPenghasilan": "Gaji",
+  "rentangGaji": "10-15 juta",
+  "tujuanPembuatanRekening": "Investasi",
+  "kodeRekening": 1002
+}
+```
+
+### Platinum Card Registration
+```json
+{
+  "namaLengkap": "David Kusuma",
+  "nik": "3175033456789012",
+  "namaIbuKandung": "Linda Kusuma",
+  "nomorTelepon": "081234567892",
+  "email": "david.kusuma@example.com",
+  "password": "David123!",
+  "tipeAkun": "BNI Taplus Platinum",
+  "jenisKartu": "Platinum",
+  "tempatLahir": "Bandung",
+  "tanggalLahir": "1980-12-10",
+  "jenisKelamin": "Laki-laki",
+  "agama": "Kristen",
+  "statusPernikahan": "Kawin",
+  "pekerjaan": "Direktur",
+  "sumberPenghasilan": "Gaji",
+  "rentangGaji": "25+ juta",
+  "tujuanPembuatanRekening": "Bisnis",
+  "kodeRekening": 1003
+}
+```
+
+### Batik Air Card Registration
+```json
+{
+  "namaLengkap": "Sarah Airlines",
+  "nik": "3175034567890123",
+  "namaIbuKandung": "Rina Airlines",
+  "nomorTelepon": "081234567893",
+  "email": "sarah.airlines@example.com",
+  "password": "Sarah123!",
+  "tipeAkun": "BNI Batik Air",
+  "jenisKartu": "Batik Air",
+  "tempatLahir": "Medan",
+  "tanggalLahir": "1992-03-18",
+  "jenisKelamin": "Perempuan",
+  "agama": "Islam",
+  "statusPernikahan": "Belum Kawin",
+  "pekerjaan": "Pilot",
+  "sumberPenghasilan": "Gaji",
+  "rentangGaji": "15-20 juta",
+  "tujuanPembuatanRekening": "Travel",
+  "kodeRekening": 1004
+}
+```
+
+---
+
+## ❌ Error Codes & Messages
+
+### JenisKartu Validation Errors
+```json
+{
+  "INVALID_CARD_TYPE": {
+    "code": "REG_001",
+    "message": "Jenis kartu tidak valid. Pilihan yang tersedia: Silver, Gold, Platinum, Batik Air",
+    "httpStatus": 400
+  },
+  "MISSING_CARD_TYPE": {
+    "code": "REG_002", 
+    "message": "Jenis kartu wajib diisi",
+    "httpStatus": 400
+  },
+  "EMPTY_CARD_TYPE": {
+    "code": "REG_003",
+    "message": "Jenis kartu tidak boleh kosong",
+    "httpStatus": 400
+  }
+}
+```
+
+### General Validation Errors
+```json
+{
+  "EMAIL_ALREADY_EXISTS": {
+    "code": "REG_004",
+    "message": "Email sudah terdaftar dalam sistem",
+    "httpStatus": 400
+  },
+  "PHONE_ALREADY_EXISTS": {
+    "code": "REG_005",
+    "message": "Nomor telepon sudah terdaftar dalam sistem", 
+    "httpStatus": 400
+  },
+  "DUKCAPIL_VERIFICATION_FAILED": {
+    "code": "REG_006",
+    "message": "Data tidak cocok dengan database Dukcapil",
+    "httpStatus": 400
+  }
+}
+```
+
+---
+
+## 🔍 Database Schema Updates
+
+### Customer Table - **UPDATED**
+```sql
+CREATE TABLE customers (
+    id BIGSERIAL PRIMARY KEY,
+    nama_lengkap VARCHAR(100) NOT NULL,
+    nik VARCHAR(16) UNIQUE NOT NULL,
+    nama_ibu_kandung VARCHAR(100) NOT NULL,
+    nomor_telepon VARCHAR(15) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    tipe_akun VARCHAR(50) NOT NULL,
+    jenis_kartu VARCHAR(20) NOT NULL CHECK (jenis_kartu IN ('Silver', 'Gold', 'Platinum', 'Batik Air')),
+    tempat_lahir VARCHAR(50),
+    tanggal_lahir DATE NOT NULL,
+    jenis_kelamin VARCHAR(10) CHECK (jenis_kelamin IN ('Laki-laki', 'Perempuan')),
+    agama VARCHAR(20),
+    status_pernikahan VARCHAR(20),
+    pekerjaan VARCHAR(50),
+    sumber_penghasilan VARCHAR(50),
+    rentang_gaji VARCHAR(20),
+    tujuan_pembuatan_rekening VARCHAR(50),
+    kode_rekening INTEGER,
+    email_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Address Table (Embedded)
+```sql
+ALTER TABLE customers ADD COLUMN alamat_nama_alamat VARCHAR(255);
+ALTER TABLE customers ADD COLUMN alamat_provinsi VARCHAR(50);
+ALTER TABLE customers ADD COLUMN alamat_kota VARCHAR(50);
+ALTER TABLE customers ADD COLUMN alamat_kecamatan VARCHAR(50);
+ALTER TABLE customers ADD COLUMN alamat_kelurahan VARCHAR(50);
+ALTER TABLE customers ADD COLUMN alamat_kode_pos VARCHAR(10);
+```
+
+### Guardian Table (Embedded)
+```sql
+ALTER TABLE customers ADD COLUMN wali_jenis_wali VARCHAR(20);
+ALTER TABLE customers ADD COLUMN wali_nama_lengkap_wali VARCHAR(100);
+ALTER TABLE customers ADD COLUMN wali_pekerjaan_wali VARCHAR(50);
+ALTER TABLE customers ADD COLUMN wali_alamat_wali VARCHAR(255);
+ALTER TABLE customers ADD COLUMN wali_nomor_telepon_wali VARCHAR(15);
+```
+
+### Indexes for Performance
+```sql
+CREATE INDEX idx_customers_jenis_kartu ON customers(jenis_kartu);
+CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_customers_nik ON customers(nik);
+CREATE INDEX idx_customers_created_at ON customers(created_at);
+```
+
+---
+
+## 📊 Analytics & Reporting Endpoints
+
+### **GET** `/api/registration/analytics/card-distribution`
+Get distribution of customers by card type
+
+#### Response (200)
+```json
+{
+  "cardDistribution": {
+    "Silver": {
+      "count": 45,
+      "percentage": 30.0
+    },
+    "Gold": {
+      "count": 38,
+      "percentage": 25.3
+    },
+    "Platinum": {
+      "count": 32,
+      "percentage": 21.3
+    },
+    "Batik Air": {
+      "count": 35,
+      "percentage": 23.3
+    }
+  },
+  "totalCustomers": 150,
+  "mostPopular": "Silver",
+  "leastPopular": "Platinum"
+}
+```
+
+### **GET** `/api/registration/analytics/monthly-registrations`
+Get monthly registration statistics by card type
+
+#### Query Parameters
+- `year` (optional): Year to filter (default: current year)
+- `cardType` (optional): Filter by specific card type
+
+#### Response (200)
+```json
+{
+  "year": 2024,
+  "monthlyData": [
+    {
+      "month": "January",
+      "Silver": 5,
+      "Gold": 3,
+      "Platinum": 2,
+      "Batik Air": 4,
+      "total": 14
+    },
+    {
+      "month": "February", 
+      "Silver": 7,
+      "Gold": 5,
+      "Platinum": 3,
+      "Batik Air": 6,
+      "total": 21
+    }
+  ],
+  "yearTotal": 150
+}
+```
+
+---
+
+## 🛡️ Security Considerations
+
+### JenisKartu Security
+- Card type cannot be changed after registration (requires admin intervention)
+- Card type determines transaction limits and access levels
+- Audit trail maintained for all card type assignments
+- Rate limiting applied to registration endpoints
+
+### Validation Rules
+- JenisKartu must be validated server-side
+- Client-side validation is supplementary only
+- Database constraints enforce valid card types
+- Case-sensitive matching required
+
+---
+
+## 🚀 Future Enhancements
+
+### Planned JenisKartu Features
+1. **Card Upgrade System** - Allow customers to upgrade their card type
+2. **Dynamic Limits** - Adjust limits based on customer behavior
+3. **Seasonal Cards** - Temporary card types for special promotions
+4. **Corporate Cards** - Business-specific card types
+5. **Student Cards** - Discounted card types for students
+
+### API Versioning
+- Current version: `v1`
+- JenisKartu field introduced in: `v1.0.0`
+- Backward compatibility maintained for 6 months
+- Migration guide available for existing integrations

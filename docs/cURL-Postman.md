@@ -110,9 +110,9 @@ curl -X POST "http://localhost:8080/api/registration/check-password" \
   -d '{"password": "JohnDoe123!"}' | jq
 ```
 
-### 6. Customer Registration (Main Test)
+### 6. Customer Registration (Main Test) - **UPDATED dengan JenisKartu**
 ```bash
-echo "👤 Registration Test - John Doe:"
+echo "👤 Registration Test - John Doe (Silver):"
 curl -X POST "http://localhost:8080/api/registration/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
@@ -124,6 +124,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
     "email": "john.doe@example.com",
     "password": "JohnDoe123!",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Silver",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
@@ -151,7 +152,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
     }
   }' | jq
 
-echo "👤 Registration Test - Jane Smith:"
+echo "👤 Registration Test - Jane Smith (Gold):"
 curl -X POST "http://localhost:8080/api/registration/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
@@ -163,6 +164,7 @@ curl -X POST "http://localhost:8080/api/registration/register" \
     "email": "jane.smith@example.com",
     "password": "JaneSmith123!",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Gold",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1995-08-22",
     "jenisKelamin": "Perempuan",
@@ -189,15 +191,91 @@ curl -X POST "http://localhost:8080/api/registration/register" \
       "nomorTeleponWali": "081298765433"
     }
   }' | jq
+
+echo "👤 Registration Test - Foreign Customer (Platinum):"
+curl -X POST "http://localhost:8080/api/registration/register" \
+  -H "Content-Type: application/json" \
+  -c cookies.txt \
+  -d '{
+    "namaLengkap": "Robert Wilson",
+    "nik": "X12345678901234",
+    "namaIbuKandung": "Susan Wilson",
+    "nomorTelepon": "081234567892",
+    "email": "robert.wilson@example.com",
+    "password": "RobertWilson123!",
+    "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Platinum",
+    "tempatLahir": "New York",
+    "tanggalLahir": "1988-03-12",
+    "jenisKelamin": "Laki-laki",
+    "agama": "Kristen",
+    "statusPernikahan": "Belum Kawin",
+    "pekerjaan": "Consultant",
+    "sumberPenghasilan": "Gaji",
+    "rentangGaji": "15-20 juta",
+    "tujuanPembuatanRekening": "Bisnis",
+    "kodeRekening": 1003,
+    "alamat": {
+      "namaAlamat": "Jl. Thamrin No. 789, RT 005/RW 006",
+      "provinsi": "DKI Jakarta",
+      "kota": "Jakarta Pusat",
+      "kecamatan": "Menteng",
+      "kelurahan": "Menteng",
+      "kodePos": "10310"
+    },
+    "wali": {
+      "jenisWali": "Sponsor",
+      "namaLengkapWali": "PT. Global Solutions",
+      "pekerjaanWali": "Perusahaan",
+      "alamatWali": "Jl. Thamrin No. 789, RT 005/RW 006",
+      "nomorTeleponWali": "021-12345678"
+    }
+  }' | jq
+
+echo "👤 Registration Test - Batik Air Customer:"
+curl -X POST "http://localhost:8080/api/registration/register" \
+  -H "Content-Type: application/json" \
+  -c cookies.txt \
+  -d '{
+    "namaLengkap": "Akiko Tanaka",
+    "nik": "K31750312345678",
+    "namaIbuKandung": "Yuki Tanaka",
+    "nomorTelepon": "081234567893",
+    "email": "akiko.tanaka@example.com",
+    "password": "AkikoTanaka123!",
+    "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Batik Air",
+    "tempatLahir": "Tokyo",
+    "tanggalLahir": "1992-07-20",
+    "jenisKelamin": "Perempuan",
+    "agama": "Buddha",
+    "statusPernikahan": "Kawin",
+    "pekerjaan": "Teacher",
+    "sumberPenghasilan": "Gaji",
+    "rentangGaji": "8-12 juta",
+    "tujuanPembuatanRekening": "Tabungan",
+    "kodeRekening": 1004,
+    "alamat": {
+      "namaAlamat": "Jl. Kemang Raya No. 101, RT 007/RW 008",
+      "provinsi": "DKI Jakarta",
+      "kota": "Jakarta Selatan",
+      "kecamatan": "Kemang",
+      "kelurahan": "Kemang Timur",
+      "kodePos": "12560"
+    },
+    "wali": {
+      "jenisWali": "Suami",
+      "namaLengkapWali": "Budi Santoso",
+      "pekerjaanWali": "Engineer",
+      "alamatWali": "Jl. Kemang Raya No. 101, RT 007/RW 008",
+      "nomorTeleponWali": "081298765434"
+    }
+  }' | jq
 ```
 
 ### 7. Profile Access (Auto-login test)
 ```bash
-echo "👤 John Profile (using auto-login cookie):"
-curl -X GET "http://localhost:8080/api/registration/profile" \
-  -b cookies.txt | jq
-
-echo "👤 Jane Profile (using auto-login cookie):"
+echo "👤 Profile Access Tests:"
 curl -X GET "http://localhost:8080/api/registration/profile" \
   -b cookies.txt | jq
 ```
@@ -217,8 +295,16 @@ curl -X POST "http://localhost:8080/api/auth/login" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
-    "email": "jane.smith@example.com", 
-    "password": "JaneSmith123!"
+    "email": "robert.wilson@example.com", 
+    "password": "RobertWilson123!"
+  }' | jq
+
+curl -X POST "http://localhost:8080/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -c cookies.txt \
+  -d '{
+    "email": "akiko.tanaka@example.com", 
+    "password": "AkikoTanaka123!"
   }' | jq
 ```
 
@@ -279,9 +365,9 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
 - **GET** `{{base_url}}/auth/health`
 - **GET** `{{base_url}}/verification/health`
 
-### **2. Registration**
+### **2. Registration - **UPDATED dengan JenisKartu**
 
-#### **Register Customer**
+#### **Register Customer (KTP)**
 - **Method:** POST
 - **URL:** `{{base_url}}/registration/register`
 - **Headers:**
@@ -298,6 +384,7 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
     "email": "john.doe@example.com",
     "password": "JohnDoe123!",
     "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Silver",
     "tempatLahir": "Jakarta",
     "tanggalLahir": "1990-05-15",
     "jenisKelamin": "Laki-laki",
@@ -326,125 +413,93 @@ curl -X GET "http://localhost:8080/api/verification/stats" | jq
   }
   ```
 
-#### **Check Password Strength**
+#### **Register Foreign Customer (Passport)**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/check-password`
-- **Body:**
+- **URL:** `{{base_url}}/registration/register`
+- **Body (raw JSON):**
   ```json
   {
-    "password": "JohnDoe123!"
+    "namaLengkap": "Robert Wilson",
+    "nik": "X12345678901234",
+    "namaIbuKandung": "Susan Wilson",
+    "nomorTelepon": "081234567892",
+    "email": "robert.wilson@example.com",
+    "password": "RobertWilson123!",
+    "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Platinum",
+    "tempatLahir": "New York",
+    "tanggalLahir": "1988-03-12",
+    "jenisKelamin": "Laki-laki",
+    "agama": "Kristen",
+    "statusPernikahan": "Belum Kawin",
+    "pekerjaan": "Consultant",
+    "sumberPenghasilan": "Gaji",
+    "rentangGaji": "15-20 juta",
+    "tujuanPembuatanRekening": "Bisnis",
+    "kodeRekening": 1003,
+    "alamat": {
+      "namaAlamat": "Jl. Thamrin No. 789, RT 005/RW 006",
+      "provinsi": "DKI Jakarta",
+      "kota": "Jakarta Pusat",
+      "kecamatan": "Menteng",
+      "kelurahan": "Menteng",
+      "kodePos": "10310"
+    },
+    "wali": {
+      "jenisWali": "Sponsor",
+      "namaLengkapWali": "PT. Global Solutions",
+      "pekerjaanWali": "Perusahaan",
+      "alamatWali": "Jl. Thamrin No. 789, RT 005/RW 006",
+      "nomorTeleponWali": "021-12345678"
+    }
   }
   ```
 
-#### **Validate NIK**
+#### **Register KITAS Holder**
 - **Method:** POST
-- **URL:** `{{base_url}}/registration/validate-nik`
-- **Body:**
+- **URL:** `{{base_url}}/registration/register`
+- **Body (raw JSON):**
   ```json
   {
-    "nik": "3175031234567890"
+    "namaLengkap": "Akiko Tanaka",
+    "nik": "K31750312345678",
+    "namaIbuKandung": "Yuki Tanaka",
+    "nomorTelepon": "081234567893",
+    "email": "akiko.tanaka@example.com",
+    "password": "AkikoTanaka123!",
+    "tipeAkun": "BNI Taplus",
+    "jenisKartu": "Batik Air",
+    "tempatLahir": "Tokyo",
+    "tanggalLahir": "1992-07-20",
+    "jenisKelamin": "Perempuan",
+    "agama": "Buddha",
+    "statusPernikahan": "Kawin",
+    "pekerjaan": "Teacher",
+    "sumberPenghasilan": "Gaji",
+    "rentangGaji": "8-12 juta",
+    "tujuanPembuatanRekening": "Tabungan",
+    "kodeRekening": 1004,
+    "alamat": {
+      "namaAlamat": "Jl. Kemang Raya No. 101, RT 007/RW 008",
+      "provinsi": "DKI Jakarta",
+      "kota": "Jakarta Selatan",
+      "kecamatan": "Kemang",
+      "kelurahan": "Kemang Timur",
+      "kodePos": "12560"
+    },
+    "wali": {
+      "jenisWali": "Suami",
+      "namaLengkapWali": "Budi Santoso",
+      "pekerjaanWali": "Engineer",
+      "alamatWali": "Jl. Kemang Raya No. 101, RT 007/RW 008",
+      "nomorTeleponWali": "081298765434"
+    }
   }
   ```
-
-#### **Verify Email**
-- **Method:** POST
-- **URL:** `{{base_url}}/registration/verify-email`
-- **Body:**
-  ```json
-  {
-    "email": "john.doe@example.com"
-  }
-  ```
-
-#### **Get Profile**
-- **Method:** GET
-- **URL:** `{{base_url}}/registration/profile`
-- **Headers:** *Cookie akan diatur otomatis*
-
-#### **Registration Stats**
-- **Method:** GET
-- **URL:** `{{base_url}}/registration/stats`
-
-### **3. Authentication**
-
-#### **Login**
-- **Method:** POST
-- **URL:** `{{base_url}}/auth/login`
-- **Body:**
-  ```json
-  {
-    "email": "john.doe@example.com",
-    "password": "JohnDoe123!"
-  }
-  ```
-
-#### **Get Current User**
-- **Method:** GET
-- **URL:** `{{base_url}}/auth/me`
-
-#### **Check Authentication**
-- **Method:** GET
-- **URL:** `{{base_url}}/auth/check-auth`
-
-#### **Refresh Token**
-- **Method:** POST
-- **URL:** `{{base_url}}/auth/refresh-token`
-
-#### **Logout**
-- **Method:** POST
-- **URL:** `{{base_url}}/auth/logout`
-
-### **4. Verification**
-
-#### **NIK Verification (Main)**
-- **Method:** POST
-- **URL:** `{{base_url}}/verification/nik`
-- **Body:**
-  ```json
-  {
-    "nik": "3175031234567890",
-    "namaLengkap": "John Doe",
-    "tanggalLahir": "1990-05-15"
-  }
-  ```
-
-#### **Email Verification**
-- **Method:** POST
-- **URL:** `{{base_url}}/verification/email`
-- **Body:**
-  ```json
-  {
-    "email": "newuser@example.com"
-  }
-  ```
-
-#### **Phone Verification**
-- **Method:** POST
-- **URL:** `{{base_url}}/verification/phone`
-- **Body:**
-  ```json
-  {
-    "nomorTelepon": "081999888777"
-  }
-  ```
-
-#### **NIK Check (Simple)**
-- **Method:** POST
-- **URL:** `{{base_url}}/verification/nik-check`
-- **Body:**
-  ```json
-  {
-    "nik": "3175031234567890"
-  }
-  ```
-
-#### **Verification Stats**
-- **Method:** GET
-- **URL:** `{{base_url}}/verification/stats`
 
 ## 🔧 **Postman Pre-request Scripts**
 
-### **For Registration (Generate Random Data)**
+### **For Registration (Generate Random Data dengan JenisKartu)**
 ```javascript
 // Generate random email untuk testing
 const timestamp = Date.now();
@@ -459,26 +514,20 @@ pm.environment.set("test_phone", randomPhone);
 const randomAccountCode = Math.floor(Math.random() * 9000) + 1000;
 pm.environment.set("account_code", randomAccountCode);
 
+// Set random jenis kartu
+const jenisKartuOptions = ["Silver", "Gold", "Platinum", "Batik Air"];
+const randomJenisKartu = jenisKartuOptions[Math.floor(Math.random() * jenisKartuOptions.length)];
+pm.environment.set("jenis_kartu", randomJenisKartu);
+
 console.log("Generated email:", randomEmail);
 console.log("Generated phone:", randomPhone);
 console.log("Generated account code:", randomAccountCode);
-```
-
-### **For Authentication (Extract Token)**
-```javascript
-// Extract auth token from response headers atau cookies jika diperlukan
-pm.test("Auth cookie is set", function () {
-    const authCookie = pm.cookies.get("authToken");
-    if (authCookie) {
-        pm.environment.set("auth_token", authCookie);
-        console.log("Auth token saved:", authCookie);
-    }
-});
+console.log("Generated jenis kartu:", randomJenisKartu);
 ```
 
 ## 🔧 **Postman Tests Scripts**
 
-### **For Registration Endpoint**
+### **For Registration Endpoint (dengan JenisKartu)**
 ```javascript
 // Test response status
 pm.test("Registration successful", function () {
@@ -498,6 +547,14 @@ pm.test("Response contains customer data", function () {
     pm.expect(responseJson).to.have.property('customer');
     pm.expect(responseJson.customer).to.have.property('email');
     pm.expect(responseJson.customer).to.have.property('namaLengkap');
+    pm.expect(responseJson.customer).to.have.property('jenisKartu');
+});
+
+// Test jenis kartu validation
+pm.test("Jenis kartu is valid", function () {
+    const responseJson = pm.response.json();
+    const validJenisKartu = ["Silver", "Gold", "Platinum", "Batik Air"];
+    pm.expect(validJenisKartu).to.include(responseJson.customer.jenisKartu);
 });
 
 // Check auto-login cookie
@@ -507,276 +564,62 @@ pm.test("Auth cookie is set", function () {
     pm.environment.set("auth_token", authCookie);
     console.log("Auth token saved:", authCookie);
 });
-
-// Log response
-console.log("Response:", pm.response.text());
-```
-
-### **For Verification Endpoint**
-```javascript
-// Test NIK verification response
-pm.test("NIK verification completed", function () {
-    pm.response.to.have.status(200);
-});
-
-pm.test("Response has valid field", function () {
-    const responseJson = pm.response.json();
-    pm.expect(responseJson).to.have.property('valid');
-    pm.expect(responseJson).to.have.property('message');
-});
-
-pm.test("Valid NIK returns data", function () {
-    const responseJson = pm.response.json();
-    if (responseJson.valid) {
-        pm.expect(responseJson).to.have.property('data');
-        pm.expect(responseJson.data).to.not.be.empty;
-    }
-});
-```
-
-### **For Login Endpoint**
-```javascript
-// Test login success
-pm.test("Login successful", function () {
-    pm.response.to.have.status(200);
-});
-
-pm.test("Response contains customer data", function () {
-    const responseJson = pm.response.json();
-    pm.expect(responseJson).to.have.property('message');
-    pm.expect(responseJson).to.have.property('customer');
-});
-
-// Extract and save auth token
-pm.test("Auth cookie is set", function () {
-    const authCookie = pm.cookies.get("authToken");
-    pm.expect(authCookie).to.not.be.undefined;
-    pm.environment.set("auth_token", authCookie);
-});
 ```
 
 ---
 
-# 🧪 **Complete Test Scenarios**
+# 🧪 **Error Test Scenarios dengan JenisKartu**
 
-## ✅ **Happy Path Test Flow**
+## ❌ **Validation Error Tests**
 ```bash
 #!/bin/bash
-echo "🚀 COMPLETE HAPPY PATH TEST"
+echo "❌ VALIDATION ERROR TESTS untuk JenisKartu"
 
-# 1. Health Check
-curl -X GET "http://localhost:8080/api/registration/health"
-
-# 2. NIK Verification
-curl -X POST "http://localhost:8080/api/verification/nik" \
-  -H "Content-Type: application/json" \
-  -d '{"nik":"3175031234567890","namaLengkap":"John Doe","tanggalLahir":"1990-05-15"}'
-
-# 3. Email Check
-curl -X POST "http://localhost:8080/api/verification/email" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john.doe.test@example.com"}'
-
-# 4. Register Customer
+# 1. Invalid JenisKartu
+echo "Testing Invalid JenisKartu:"
 curl -X POST "http://localhost:8080/api/registration/register" \
   -H "Content-Type: application/json" \
-  -c test_cookies.txt \
-  -d '{ ... complete registration data ... }'
-
-# 5. Access Profile (auto-login)
-curl -X GET "http://localhost:8080/api/registration/profile" \
-  -b test_cookies.txt
-
-# 6. Manual Login Test
-curl -X POST "http://localhost:8080/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -c login_cookies.txt \
-  -d '{"email":"john.doe.test@example.com","password":"JohnDoe123!"}'
-
-# 7. Check Auth Status
-curl -X GET "http://localhost:8080/api/auth/check-auth" \
-  -b login_cookies.txt
-
-echo "✅ Happy path test completed!"
-```
-
-## ❌ **Error Test Scenarios**
-```bash
-#!/bin/bash
-echo "❌ ERROR TEST SCENARIOS"
-
-# 1. Invalid NIK Format
-curl -X POST "http://localhost:8080/api/verification/nik" \
-  -H "Content-Type: application/json" \
-  -d '{"nik":"123","namaLengkap":"Test","tanggalLahir":"1990-01-01"}'
-
-# 2. Wrong Name/Date Combination
-curl -X POST "http://localhost:8080/api/verification/nik" \
-  -H "Content-Type: application/json" \
-  -d '{"nik":"3175031234567890","namaLengkap":"Wrong Name","tanggalLahir":"1990-05-15"}'
-
-# 3. Duplicate Email Registration
-curl -X POST "http://localhost:8080/api/registration/register" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john.doe@example.com", ... }'
-
-# 4. Wrong Login Credentials
-curl -X POST "http://localhost:8080/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john.doe@example.com","password":"WrongPassword"}'
-
-# 5. Access without Auth
-curl -X GET "http://localhost:8080/api/registration/profile"
-
-echo "❌ Error tests completed!"
-```
-
-## 📊 **Performance & Load Test**
-```bash
-#!/bin/bash
-echo "📊 LOAD TEST - Multiple Requests"
-
-# Test health endpoint dengan multiple requests
-for i in {1..10}; do
-  echo "Request $i:"
-  curl -X GET "http://localhost:8080/api/registration/health" \
-    -w "Time: %{time_total}s, Status: %{http_code}\n" \
-    -s -o /dev/null
-done
-
-# Test NIK verification dengan different data
-declare -a niks=("3175031234567890" "3175032345678901" "3175033456789012")
-declare -a names=("John Doe" "Jane Smith" "Ahmad Rahman")
-declare -a dates=("1990-05-15" "1995-08-22" "1985-12-10")
-
-for i in {0..2}; do
-  echo "Testing ${names[$i]}:"
-  curl -X POST "http://localhost:8080/api/verification/nik" \
-    -H "Content-Type: application/json" \
-    -d "{\"nik\":\"${niks[$i]}\",\"namaLengkap\":\"${names[$i]}\",\"tanggalLahir\":\"${dates[$i]}\"}" \
-    -w "Time: %{time_total}s, Status: %{http_code}\n" \
-    -s -o /dev/null
-done
-
-echo "📊 Load test completed!"
-```
-
----
-
-# 🔍 **Debugging & Troubleshooting**
-
-## **Common Issues**
-
-### **1. Cookie Issues**
-```bash
-# Check if cookies are being set
-curl -X POST "http://localhost:8080/api/auth/login" \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -v \
-  -d '{"email":"test@example.com","password":"password"}'
-
-# Check cookie file content
-cat cookies.txt
-```
-
-### **2. CORS Issues**
-```bash
-# Test CORS with OPTIONS request
-curl -X OPTIONS "http://localhost:8080/api/registration/register" \
-  -H "Origin: http://localhost:3000" \
-  -H "Access-Control-Request-Method: POST" \
-  -H "Access-Control-Request-Headers: Content-Type" \
-  -v
-```
-
-### **3. JSON Validation**
-```bash
-# Test with invalid JSON
-curl -X POST "http://localhost:8080/api/registration/register" \
-  -H "Content-Type: application/json" \
-  -d '{"namaLengkap":"Test"' # Invalid JSON
-
-# Test with missing required fields
-curl -X POST "http://localhost:8080/api/registration/register" \
-  -H "Content-Type: application/json" \
-  -d '{"namaLengkap":"Test Only"}'
-```
-
-### **4. Connection Test**
-```bash
-# Test service connectivity
-curl -X GET "http://localhost:8080/api/registration/health" \
-  --connect-timeout 5 \
-  --max-time 10 \
-  -v
-
-# Test Dukcapil service connectivity (jika available)
-curl -X GET "http://localhost:8081/health" \
-  --connect-timeout 5 \
-  --max-time 10 \
-  -v
-```
-
----
-
-# 📝 **Response Examples**
-
-## ✅ **Success Responses**
-
-### Registration Success
-```json
-{
-  "success": true,
-  "message": "Registrasi berhasil! Data Anda telah terverifikasi dengan KTP Dukcapil.",
-  "customer": {
-    "id": 1,
-    "namaLengkap": "John Doe",
+  -d '{
+    "namaLengkap": "Test User",
     "nik": "3175031234567890",
-    "email": "john.doe@example.com",
-    "tipeAkun": "BNI Taplus"
-  }
-}
-```
+    "email": "test.invalid@example.com",
+    "password": "Test123!",
+    "tipeAkun": "BNI Taplus",
+    "jenisKartu": "INVALID_CARD",
+    "tanggalLahir": "1990-01-01"
+  }' | jq
 
-### NIK Verification Success
-```json
-{
-  "valid": true,
-  "message": "NIK dan nama cocok",
-  "data": {
+# 2. Missing JenisKartu
+echo "Testing Missing JenisKartu:"
+curl -X POST "http://localhost:8080/api/registration/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "namaLengkap": "Test User",
     "nik": "3175031234567890",
-    "namaLengkap": "John Doe",
-    "tempatLahir": "Jakarta",
-    "tanggalLahir": "1990-05-15",
-    "jenisKelamin": "LAKI_LAKI"
-  }
-}
+    "email": "test.missing@example.com",
+    "password": "Test123!",
+    "tipeAkun": "BNI Taplus",
+    "tanggalLahir": "1990-01-01"
+  }' | jq
+
+# 3. Empty JenisKartu
+echo "Testing Empty JenisKartu:"
+curl -X POST "http://localhost:8080/api/registration/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "namaLengkap": "Test User",
+    "nik": "3175031234567890",
+    "email": "test.empty@example.com",
+    "password": "Test123!",
+    "tipeAkun": "BNI Taplus",
+    "jenisKartu": "",
+    "tanggalLahir": "1990-01-01"
+  }' | jq
+
+echo "❌ Validation error tests completed!"
 ```
 
-## ❌ **Error Responses**
-
-### Validation Error
-```json
-{
-  "success": false,
-  "error": "Email sudah terdaftar dalam sistem",
-  "type": "validation_error"
-}
-```
-
-### NIK Verification Failed
-```json
-{
-  "valid": false,
-  "message": "Data tidak cocok dengan database Dukcapil",
-  "data": {}
-}
-```
-
-### Authentication Error
-```json
-{
-  "error": "Email atau password tidak valid"
-}
-```
+## ✅ **Complete Happy Path dengan Semua JenisKartu**
+```bash
+#!/bin/bash
+echo "🚀 COMPLETE

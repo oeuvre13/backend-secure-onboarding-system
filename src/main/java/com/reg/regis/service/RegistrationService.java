@@ -105,6 +105,9 @@ public class RegistrationService {
         customer.setKodeRekening(request.getKodeRekening());
         customer.setEmailVerified(false);
         
+        // NEW: Set jenisKartu
+        customer.setJenisKartu(request.getJenisKartu() != null ? request.getJenisKartu() : "Silver");
+        
         // 7. BUAT ALAMAT
         Alamat alamat = new Alamat();
         alamat.setNamaAlamat(request.getAlamat().getNamaAlamat());
@@ -114,17 +117,20 @@ public class RegistrationService {
         alamat.setKelurahan(request.getAlamat().getKelurahan());
         alamat.setKodePos(request.getAlamat().getKodePos());
         
-        // 8. BUAT WALI
-        Wali wali = new Wali();
-        wali.setJenisWali(request.getWali().getJenisWali());
-        wali.setNamaLengkapWali(request.getWali().getNamaLengkapWali());
-        wali.setPekerjaanWali(request.getWali().getPekerjaanWali());
-        wali.setAlamatWali(request.getWali().getAlamatWali());
-        wali.setNomorTeleponWali(request.getWali().getNomorTeleponWali());
+        // 8. BUAT WALI (OPTIONAL)
+        Wali wali = null;
+        if (request.getWali() != null && request.getWali().isComplete()) {
+            wali = new Wali();
+            wali.setJenisWali(request.getWali().getJenisWali());
+            wali.setNamaLengkapWali(request.getWali().getNamaLengkapWali());
+            wali.setPekerjaanWali(request.getWali().getPekerjaanWali());
+            wali.setAlamatWali(request.getWali().getAlamatWali());
+            wali.setNomorTeleponWali(request.getWali().getNomorTeleponWali());
+        }
         
         // Set relasi
         customer.setAlamat(alamat);
-        customer.setWali(wali);
+        customer.setWali(wali);  // Bisa null
         
         return customerRepository.save(customer);
     }

@@ -45,6 +45,11 @@ public class Customer {
     @Column(name = "tipe_akun", nullable = false)
     private String tipeAkun;
     
+    // NEW FIELD: jenisKartu
+    @NotBlank(message = "Jenis kartu wajib diisi")
+    @Column(name = "jenis_kartu", nullable = false)
+    private String jenisKartu = "Silver";  // Default value
+    
     @NotBlank(message = "Tempat lahir wajib diisi")
     @Column(name = "tempat_lahir", nullable = false)
     private String tempatLahir;
@@ -81,8 +86,8 @@ public class Customer {
     @Column(name = "tujuan_pembuatan_rekening", nullable = false)
     private String tujuanPembuatanRekening;
     
-    @NotNull(message = "Kode rekening wajib diisi")
-    @Column(name = "kode_rekening", nullable = false)
+    // @NotNull(message = "Kode rekening wajib diisi")
+    @Column(name = "kode_rekening")
     private Integer kodeRekening;
     
     @Column(name = "created_at", nullable = false)
@@ -98,14 +103,18 @@ public class Customer {
     @JoinColumn(name = "alamat_id")
     private Alamat alamat;
     
+    // UPDATED: Wali sekarang OPTIONAL (nullable = true)
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "wali_id")
+    @JoinColumn(name = "wali_id", nullable = true)
     private Wali wali;
     
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (jenisKartu == null || jenisKartu.isEmpty()) {
+            jenisKartu = "Silver";  // Default value
+        }
     }
     
     @PreUpdate
@@ -140,6 +149,10 @@ public class Customer {
     
     public String getTipeAkun() { return tipeAkun; }
     public void setTipeAkun(String tipeAkun) { this.tipeAkun = tipeAkun; }
+    
+    // NEW GETTER/SETTER: jenisKartu
+    public String getJenisKartu() { return jenisKartu; }
+    public void setJenisKartu(String jenisKartu) { this.jenisKartu = jenisKartu; }
     
     public String getTempatLahir() { return tempatLahir; }
     public void setTempatLahir(String tempatLahir) { this.tempatLahir = tempatLahir; }
