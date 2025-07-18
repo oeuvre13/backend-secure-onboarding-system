@@ -1,4 +1,4 @@
-package com.reg.regis.dto;
+package com.reg.regis.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Map;

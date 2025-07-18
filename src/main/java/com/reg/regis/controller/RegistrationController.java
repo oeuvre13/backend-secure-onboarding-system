@@ -1,6 +1,7 @@
 package com.reg.regis.controller;
 
-import com.reg.regis.dto.RegistrationRequest;
+import com.reg.regis.dto.request.RegistrationRequest;
+import com.reg.regis.dto.response.RegistrationResponse;
 import com.reg.regis.model.Customer;
 import com.reg.regis.service.RegistrationService;
 import jakarta.servlet.http.Cookie;
@@ -27,10 +28,10 @@ public class RegistrationController {
      * - Email tidak boleh duplikat
      * - Nomor HP tidak boleh duplikat
      */
-    @PostMapping("/register")  // ← Sekarang jadi POST /registration/register
+    @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@Valid @RequestBody RegistrationRequest request, HttpServletResponse response) {
         try {
-            Customer customer = registrationService.registerCustomer(request);
+            RegistrationResponse registrationResponse = registrationService.registerCustomer(request);
             String token = registrationService.authenticateCustomer(request.getEmail(), request.getPassword());
             
             // Set HTTP-only cookie
@@ -45,7 +46,7 @@ public class RegistrationController {
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("success", true);
             responseData.put("message", "Registrasi berhasil! Data Anda telah terverifikasi dengan KTP Dukcapil.");
-            responseData.put("customer", buildCustomerResponse(customer));
+            responseData.put("data", registrationResponse);
             
             return ResponseEntity.ok(responseData);
             
@@ -68,7 +69,7 @@ public class RegistrationController {
     /**
      * Check password strength
      */
-    @PostMapping("/check-password")  // ← POST /registration/check-password
+    @PostMapping("/check-password")
     public ResponseEntity<?> checkPasswordStrength(@RequestBody Map<String, String> request) {
         String password = request.get("password");
         String strength = registrationService.checkPasswordStrength(password);
@@ -79,7 +80,7 @@ public class RegistrationController {
     /**
      * Validate NIK format
      */
-    @PostMapping("/validate-nik")  // ← POST /registration/validate-nik
+    @PostMapping("/validate-nik")
     public ResponseEntity<?> validateNik(@RequestBody Map<String, String> request) {
         try {
             String nik = request.get("nik");
@@ -103,7 +104,7 @@ public class RegistrationController {
     /**
      * Verify email customer
      */
-    @PostMapping("/verify-email")  // ← POST /registration/verify-email
+    @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
@@ -119,7 +120,7 @@ public class RegistrationController {
     /**
      * Get registration statistics
      */
-    @GetMapping("/stats")  // ← GET /registration/stats
+    @GetMapping("/stats")
     public ResponseEntity<?> getRegistrationStats() {
         return ResponseEntity.ok(registrationService.getRegistrationStats());
     }
@@ -127,7 +128,7 @@ public class RegistrationController {
     /**
      * Health check endpoint
      */
-    @GetMapping("/health")  // ← GET /registration/health
+    @GetMapping("/health")
     public ResponseEntity<?> healthCheck() {
         var stats = registrationService.getRegistrationStats();
         
@@ -159,7 +160,7 @@ public class RegistrationController {
     /**
      * Get customer profile  
      */
-    @GetMapping("/profile")  // ← GET /registration/profile
+    @GetMapping("/profile")
     public ResponseEntity<?> getCustomerProfile(@CookieValue(value = "authToken", required = false) String token) {
         try {
             if (token == null || token.isEmpty()) {
@@ -187,7 +188,7 @@ public class RegistrationController {
     }
     
     /**
-     * UPDATED: Helper method untuk build customer response dengan jenisKartu dan wali optional
+     * UPDATED: Helper method untuk build customer response dengan jenisKartu dan nomor kartu debit virtual
      */
     private Map<String, Object> buildCustomerResponse(Customer customer) {
         Map<String, Object> customerData = new HashMap<>();
@@ -198,11 +199,18 @@ public class RegistrationController {
         customerData.put("nomorTelepon", customer.getNomorTelepon());
         customerData.put("tipeAkun", customer.getTipeAkun());
         
-        // NEW: Add jenisKartu field
+        // Add jenisKartu field
         try {
             customerData.put("jenisKartu", customer.getJenisKartu() != null ? customer.getJenisKartu() : "Silver");
         } catch (Exception e) {
             customerData.put("jenisKartu", "Silver"); // Default fallback
+        }
+        
+        // Add nomor kartu debit virtual
+        try {
+            customerData.put("nomorKartuDebitVirtual", customer.getNomorKartuDebitVirtual());
+        } catch (Exception e) {
+            customerData.put("nomorKartuDebitVirtual", null);
         }
         
         customerData.put("tempatLahir", customer.getTempatLahir());
@@ -225,17 +233,16 @@ public class RegistrationController {
             customerData.put("alamat", alamatData);
         }
         
-        // UPDATED: Wali info (handle optional/null)
+        // Wali info (handle optional/null)
         if (customer.getWali() != null) {
             Map<String, Object> waliData = new HashMap<>();
             waliData.put("jenisWali", customer.getWali().getJenisWali());
             waliData.put("namaLengkapWali", customer.getWali().getNamaLengkapWali());
             waliData.put("pekerjaanWali", customer.getWali().getPekerjaanWali());
-            waliData.put("alamatWali", customer.getWali().getAlamatWali());  // Added missing field
+            waliData.put("alamatWali", customer.getWali().getAlamatWali());
             waliData.put("nomorTeleponWali", customer.getWali().getNomorTeleponWali());
             customerData.put("wali", waliData);
         } else {
-            // Explicitly set null for consistency
             customerData.put("wali", null);
         }
         

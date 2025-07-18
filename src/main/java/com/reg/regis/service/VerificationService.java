@@ -1,6 +1,11 @@
 package com.reg.regis.service;
 
-import com.reg.regis.dto.*;
+// import com.reg.regis.dto.*;
+import com.reg.regis.dto.request.EmailVerificationRequest;
+import com.reg.regis.dto.request.NikVerificationRequest;
+import com.reg.regis.dto.request.PhoneVerificationRequest;
+import com.reg.regis.dto.response.DukcapilResponseDto;
+import com.reg.regis.dto.response.VerificationResponse;
 import com.reg.regis.model.Customer;
 import com.reg.regis.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,8 @@
 package com.reg.regis.service;
 
-import com.reg.regis.dto.RegistrationRequest;
-import com.reg.regis.dto.DukcapilResponseDto;
+import com.reg.regis.dto.request.RegistrationRequest;
+import com.reg.regis.dto.response.DukcapilResponseDto;
+import com.reg.regis.dto.response.RegistrationResponse;
 import com.reg.regis.model.Customer;
 import com.reg.regis.model.Alamat;
 import com.reg.regis.model.Wali;
@@ -33,6 +34,62 @@ public class RegistrationService {
     
     // Static random untuk thread safety
     private static final SecureRandom RANDOM = new SecureRandom();
+    
+    /**
+     * Generate nomor kartu debit virtual 16 digit dengan format standar kartu
+     * Format: xxxx xxxx xxxx xxxx
+     */
+    private String generateNomorKartuDebitVirtual(String jenisKartu) {
+        // Prefix berdasarkan jenis kartu (4 digit pertama)
+        String prefix = switch (jenisKartu) {
+            case "Silver" -> "4101";      // 4101 xxxx xxxx xxxx
+            case "Gold" -> "4102";        // 4102 xxxx xxxx xxxx  
+            case "Platinum" -> "4103";    // 4103 xxxx xxxx xxxx
+            case "Batik Air" -> "4104";   // 4104 xxxx xxxx xxxx
+            case "GPN" -> "4105";         // 4105 xxxx xxxx xxxx
+            default -> "4101";            // Default Silver
+        };
+        
+        // Generate 12 digit sisanya (random)
+        long random12Digit = (long)(RANDOM.nextDouble() * 1000000000000L);
+        String random12DigitStr = String.format("%012d", random12Digit);
+        
+        // Gabungkan jadi 16 digit
+        String cardNumber = prefix + random12DigitStr;
+        
+        // Format dengan spasi: xxxx xxxx xxxx xxxx
+        return formatCardNumber(cardNumber);
+    }
+    
+    /**
+     * Format 16 digit menjadi xxxx xxxx xxxx xxxx
+     */
+    private String formatCardNumber(String cardNumber) {
+        if (cardNumber.length() != 16) {
+            throw new IllegalArgumentException("Card number must be 16 digits");
+        }
+        
+        return cardNumber.substring(0, 4) + " " + 
+               cardNumber.substring(4, 8) + " " + 
+               cardNumber.substring(8, 12) + " " + 
+               cardNumber.substring(12, 16);
+    }
+    
+    /**
+     * Generate nomor kartu debit virtual dengan collision detection
+     */
+    private String generateUniqueNomorKartuDebitVirtual(String jenisKartu) {
+        String nomorKartu = generateNomorKartuDebitVirtual(jenisKartu);
+        
+        // Check collision dan retry maksimal 5 kali
+        int attempts = 0;
+        while (customerRepository.existsByNomorKartuDebitVirtual(nomorKartu) && attempts < 5) {
+            nomorKartu = generateNomorKartuDebitVirtual(jenisKartu);
+            attempts++;
+        }
+        
+        return nomorKartu;
+    }
     
     /**
      * Generate kode rekening berdasarkan jenis kartu
@@ -99,7 +156,7 @@ public class RegistrationService {
     }
     
     @Transactional
-    public Customer registerCustomer(RegistrationRequest request) {
+    public RegistrationResponse registerCustomer(RegistrationRequest request) {
         // 1. CHECK DUKCAPIL SERVICE AVAILABILITY
         if (!dukcapilClientService.isDukcapilServiceHealthy()) {
             throw new RuntimeException("Dukcapil service tidak tersedia. Silakan coba lagi nanti.");
@@ -131,14 +188,18 @@ public class RegistrationService {
             throw new RuntimeException("NIK " + request.getNik() + " sudah pernah digunakan untuk registrasi.");
         }
         
-        // 6. AUTO-GENERATE KODE REKENING JIKA BELUM ADA
+        // 6. SET JENIS KARTU DAN AUTO-GENERATE KODE REKENING
+        String jenisKartu = request.getJenisKartu() != null ? request.getJenisKartu() : "Silver";
+        
         if (request.getKodeRekening() == null) {
-            String jenisKartu = request.getJenisKartu() != null ? request.getJenisKartu() : "Silver";
             Integer generatedCode = generateUniqueKodeRekening(jenisKartu);
             request.setKodeRekening(generatedCode);
         }
         
-        // 7. BUAT CUSTOMER BARU DENGAN DATA DARI DUKCAPIL
+        // 7. AUTO-GENERATE NOMOR KARTU DEBIT VIRTUAL
+        String nomorKartuDebitVirtual = generateUniqueNomorKartuDebitVirtual(jenisKartu);
+        
+        // 8. BUAT CUSTOMER BARU DENGAN DATA DARI DUKCAPIL
         Customer customer = new Customer();
         Map<String, Object> ktpData = dukcapilResponse.getData();
         
@@ -181,10 +242,11 @@ public class RegistrationService {
         customer.setKodeRekening(request.getKodeRekening()); // Generated code
         customer.setEmailVerified(false);
         
-        // Set jenisKartu
-        customer.setJenisKartu(request.getJenisKartu() != null ? request.getJenisKartu() : "Silver");
+        // Set jenisKartu dan nomor kartu debit virtual
+        customer.setJenisKartu(jenisKartu);
+        customer.setNomorKartuDebitVirtual(nomorKartuDebitVirtual);
         
-        // 8. BUAT ALAMAT
+        // 9. BUAT ALAMAT
         Alamat alamat = new Alamat();
         alamat.setNamaAlamat(request.getAlamat().getNamaAlamat());
         alamat.setProvinsi(request.getAlamat().getProvinsi());
@@ -193,7 +255,7 @@ public class RegistrationService {
         alamat.setKelurahan(request.getAlamat().getKelurahan());
         alamat.setKodePos(request.getAlamat().getKodePos());
         
-        // 9. BUAT WALI (OPTIONAL)
+        // 10. BUAT WALI (OPTIONAL)
         Wali wali = null;
         if (request.getWali() != null && request.getWali().isComplete()) {
             wali = new Wali();
@@ -208,7 +270,16 @@ public class RegistrationService {
         customer.setAlamat(alamat);
         customer.setWali(wali);  // Bisa null
         
-        return customerRepository.save(customer);
+        Customer savedCustomer = customerRepository.save(customer);
+        
+        // Return response DTO dengan data yang diminta
+        return new RegistrationResponse(
+            savedCustomer.getJenisKartu(),
+            savedCustomer.getNamaLengkap(),
+            String.valueOf(savedCustomer.getKodeRekening()),
+            "Tabungan Regular", // default jenis tabungan
+            savedCustomer.getNomorKartuDebitVirtual()
+        );
     }
     
     // NEW: Method untuk check kode rekening exists (untuk repository)

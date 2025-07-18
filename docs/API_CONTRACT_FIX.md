@@ -92,7 +92,6 @@ Registrasi customer baru dengan validasi Dukcapil + Auto Login
   "sumberPenghasilan": "Gaji",
   "rentangGaji": "5-10 juta",
   "tujuanPembuatanRekening": "Tabungan",
-  "kodeRekening": 1001,
   "alamat": {
     "namaAlamat": "Jl. Sudirman No. 123",
     "provinsi": "DKI Jakarta",

@@ -120,7 +120,7 @@ curl -X POST "http://localhost:8083/api/auth/check-password" \
 
 ```bash
 echo "👤 Registration Test - John Doe (Silver):"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -180,7 +180,6 @@ curl -X POST "http://localhost:8083/api/auth/register" \
     "sumberPenghasilan": "Gaji",
     "rentangGaji": "10-15 juta",
     "tujuanPembuatanRekening": "Investasi",
-    "kodeRekening": 1002,
     "alamat": {
       "namaAlamat": "Jl. Gatot Subroto No. 456, RT 003/RW 004",
       "provinsi": "DKI Jakarta",
@@ -283,7 +282,7 @@ curl -X POST "http://localhost:8083/api/auth/register" \
 
 ```bash
 echo "👤 John Profile (using auto-login cookie):"
-curl -X GET "http://localhost:8083/api/auth/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
 
 echo "👤 Jane Profile (using auto-login cookie):"
@@ -297,7 +296,7 @@ curl -X GET "http://localhost:8083/api/auth/profile" \
 
 ```bash
 echo "🔐 Login Tests:"
-curl -X POST "http://localhost:8083/api/auth/login" \
+curl -X POST "http://localhost:8080/api/auth/login" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -326,7 +325,7 @@ curl -X POST "http://localhost:8083/api/auth/login" \
 
 ```bash
 echo "👤 Get Current User (Auth/Me):"
-curl -X GET "http://localhost:8083/api/auth/me" \
+curl -X GET "http://localhost:8080/api/auth/me" \
   -b cookies.txt | jq
 
 echo "✅ Check Auth Status:"

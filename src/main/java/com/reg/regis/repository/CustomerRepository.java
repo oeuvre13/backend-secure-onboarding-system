@@ -47,4 +47,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
     @Query("SELECT c FROM Customer c WHERE c.jenisKartu = :jenisKartu")
     java.util.List<Customer> findByJenisKartu(@Param("jenisKartu") String jenisKartu);
+
+    boolean existsByNomorKartuDebitVirtual(String nomorKartuDebitVirtual);
 }
