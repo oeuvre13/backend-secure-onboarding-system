@@ -1,4 +1,4 @@
-package com.reg.regis.dto;
+package com.reg.regis.dto.response;
 
 public class VerificationResponse {
     private boolean valid;

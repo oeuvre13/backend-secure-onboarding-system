@@ -1,9 +1,9 @@
 package com.reg.regis.controller;
 
-import com.reg.regis.dto.NikVerificationRequest;
-import com.reg.regis.dto.EmailVerificationRequest;
-import com.reg.regis.dto.PhoneVerificationRequest;
-import com.reg.regis.dto.VerificationResponse;
+import com.reg.regis.dto.request.EmailVerificationRequest;
+import com.reg.regis.dto.request.NikVerificationRequest;
+import com.reg.regis.dto.request.PhoneVerificationRequest;
+import com.reg.regis.dto.response.VerificationResponse;
 import com.reg.regis.service.VerificationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

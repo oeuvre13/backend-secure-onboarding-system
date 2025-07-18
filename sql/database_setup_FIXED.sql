@@ -45,6 +45,7 @@ CREATE TABLE customers (
     password VARCHAR(255) NOT NULL,
     tipe_akun VARCHAR(100) NOT NULL,
     jenis_kartu VARCHAR(50) NOT NULL DEFAULT 'Silver',  -- NEW FIELD
+    nomor_kartu_debit_virtual VARCHAR(19) UNIQUE,  -- TAMBAHAN FIELD BARU
     tempat_lahir VARCHAR(100) NOT NULL,
     tanggal_lahir DATE NOT NULL,
     jenis_kelamin VARCHAR(20) NOT NULL,
@@ -76,6 +77,7 @@ CREATE INDEX idx_customers_phone ON customers(nomor_telepon);
 CREATE INDEX idx_customers_nik ON customers(nik);
 CREATE INDEX idx_customers_verified ON customers(email_verified);
 CREATE INDEX idx_customers_jenis_kartu ON customers(jenis_kartu);  -- NEW INDEX
+CREATE INDEX idx_customers_kartu_debit ON customers(nomor_kartu_debit_virtual);  -- INDEX UNTUK FIELD BARU
 
 -- Create trigger untuk updated_at customers
 CREATE TRIGGER trigger_customers_updated_at

@@ -1,4 +1,4 @@
-package com.reg.regis.dto;
+package com.reg.regis.dto.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -63,6 +63,8 @@ public class RegistrationRequest {
     
     // @NotNull(message = "Kode rekening wajib diisi")
     private Integer kodeRekening;
+
+    private String nomorKartuDebitVirtual;
     
     @Valid
     @NotNull(message = "Alamat wajib diisi")
@@ -102,6 +104,9 @@ public class RegistrationRequest {
     public void setJenisKartu(String jenisKartu) { 
         this.jenisKartu = (jenisKartu != null && !jenisKartu.isEmpty()) ? jenisKartu : "Silver"; 
     }
+
+    public String getNomorKartuDebitVirtual() {return nomorKartuDebitVirtual;}
+    public void setNomorKartuDebitVirtual(String nomorKartuDebitVirtual) {this.nomorKartuDebitVirtual = nomorKartuDebitVirtual;}
     
     public String getTempatLahir() { return tempatLahir; }
     public void setTempatLahir(String tempatLahir) { this.tempatLahir = tempatLahir; }

@@ -89,6 +89,9 @@ public class Customer {
     // @NotNull(message = "Kode rekening wajib diisi")
     @Column(name = "kode_rekening")
     private Integer kodeRekening;
+
+    @Column(name = "nomor_kartu_debit_virtual", unique = true)
+    private String nomorKartuDebitVirtual;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -185,6 +188,9 @@ public class Customer {
     public Integer getKodeRekening() { return kodeRekening; }
     public void setKodeRekening(Integer kodeRekening) { this.kodeRekening = kodeRekening; }
     
+    public String getNomorKartuDebitVirtual() {return nomorKartuDebitVirtual;}
+    public void setNomorKartuDebitVirtual(String nomorKartuDebitVirtual) {this.nomorKartuDebitVirtual = nomorKartuDebitVirtual;}
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     

@@ -1,4 +1,4 @@
-package com.reg.regis.dto;
+package com.reg.regis.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

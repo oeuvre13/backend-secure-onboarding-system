@@ -1,4 +1,4 @@
-package com.reg.regis.dto;
+package com.reg.regis.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
