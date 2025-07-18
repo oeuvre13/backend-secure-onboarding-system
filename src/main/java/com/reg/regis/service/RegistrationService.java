@@ -277,7 +277,7 @@ public class RegistrationService {
             savedCustomer.getJenisKartu(),
             savedCustomer.getNamaLengkap(),
             String.valueOf(savedCustomer.getKodeRekening()),
-            "Tabungan Regular", // default jenis tabungan
+            savedCustomer.getTipeAkun(), // ✅ Ini akan jadi jenisTabungan
             savedCustomer.getNomorKartuDebitVirtual()
         );
     }
