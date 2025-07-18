@@ -45,10 +45,9 @@ public class Customer {
     @Column(name = "tipe_akun", nullable = false)
     private String tipeAkun;
     
-    // NEW FIELD: jenisKartu
     @NotBlank(message = "Jenis kartu wajib diisi")
     @Column(name = "jenis_kartu", nullable = false)
-    private String jenisKartu = "Silver";  // Default value
+    private String jenisKartu;
     
     @NotBlank(message = "Tempat lahir wajib diisi")
     @Column(name = "tempat_lahir", nullable = false)

@@ -159,7 +159,7 @@ curl -X POST "http://localhost:8080/api/auth/register" \
   }' | jq
 
 echo "👤 Registration Test - Jane Smith (Gold):"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
