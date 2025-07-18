@@ -274,12 +274,12 @@ public class RegistrationService {
         
         // Return response DTO dengan data yang diminta
         return new RegistrationResponse(
-            savedCustomer.getJenisKartu(),
-            savedCustomer.getNamaLengkap(),
-            String.valueOf(savedCustomer.getKodeRekening()),
-            "Tabungan Regular", // default jenis tabungan
-            savedCustomer.getNomorKartuDebitVirtual()
-        );
+        savedCustomer.getJenisKartu(),
+        savedCustomer.getNamaLengkap(),
+        String.valueOf(savedCustomer.getKodeRekening()),
+        savedCustomer.getTipeAkun(), // ✅ Ini akan jadi jenisTabungan
+        savedCustomer.getNomorKartuDebitVirtual()
+);
     }
     
     // NEW: Method untuk check kode rekening exists (untuk repository)
