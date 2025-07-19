@@ -3,7 +3,8 @@
 -- Jalankan dengan: psql postgres -f sql/database_setup_FIXED.sql
 
 -- 2. Create Database untuk Customer Registration
-CREATE DATABASE IF NOT EXISTS customer_registration;
+DROP DATABASE IF EXISTS customer_registration;
+CREATE DATABASE customer_registration WITH OWNER = postgres;
 
 -- 4. Setup Customer Registration Database
 \c customer_registration;
@@ -87,7 +88,5 @@ CREATE TRIGGER trigger_customers_updated_at
 
 -- Verify setup
 SELECT 'Database setup completed successfully!' as status;
-\c dukcapil_ktp;
-SELECT 'Dukcapil KTP Records: ' || COUNT(*) as status FROM ktp_dukcapil;
 \c customer_registration;
 SELECT 'Customer Registration setup completed!' as status;
