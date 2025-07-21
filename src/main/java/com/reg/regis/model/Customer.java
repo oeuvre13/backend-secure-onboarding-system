@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "customers")
 public class Customer {
@@ -99,6 +101,7 @@ public class Customer {
     private LocalDateTime updatedAt;
     
     @Column(name = "email_verified", nullable = false)
+    @JsonIgnore
     private Boolean emailVerified = false;
     
     // @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

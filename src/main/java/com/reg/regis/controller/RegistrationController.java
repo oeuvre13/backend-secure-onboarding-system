@@ -7,7 +7,7 @@ import com.reg.regis.service.RegistrationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
@@ -18,8 +18,17 @@ import java.util.Map;
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class RegistrationController {
     
-    @Autowired
-    private RegistrationService registrationService;
+    @Value("${app.security.cookie.secure:false}")
+    private boolean cookieSecure;
+    
+    @Value("${app.security.cookie.domain:}")
+    private String cookieDomain;
+
+    private final RegistrationService registrationService;
+
+    public RegistrationController(RegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
     
     /**
      * Register customer dengan validasi ketat
@@ -34,13 +43,8 @@ public class RegistrationController {
             RegistrationResponse registrationResponse = registrationService.registerCustomer(request);
             String token = registrationService.authenticateCustomer(request.getEmail(), request.getPassword());
             
-            // Set HTTP-only cookie
-            Cookie authCookie = new Cookie("authToken", token);
-            authCookie.setHttpOnly(true);
-            authCookie.setSecure(false);
-            authCookie.setPath("/");
-            authCookie.setMaxAge(24 * 60 * 60);
-            authCookie.setDomain("localhost");
+            // Set SECURE HTTP-only cookie
+            Cookie authCookie = createSecureAuthCookie("authToken", token);
             response.addCookie(authCookie);
             
             Map<String, Object> responseData = new HashMap<>();
@@ -247,5 +251,26 @@ public class RegistrationController {
         }
         
         return customerData;
+    }
+    
+    /**
+     * Create secure authentication cookie
+     */
+    private Cookie createSecureAuthCookie(String name, String value) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true); // Prevent XSS
+        cookie.setSecure(cookieSecure); // HTTPS only in production
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60); // 24 hours
+        
+        // Set domain only if specified in properties
+        if (cookieDomain != null && !cookieDomain.isEmpty()) {
+            cookie.setDomain(cookieDomain);
+        }
+        
+        // SameSite attribute for CSRF protection
+        cookie.setAttribute("SameSite", "Strict");
+        
+        return cookie;
     }
 }

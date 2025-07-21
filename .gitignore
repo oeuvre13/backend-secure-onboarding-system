@@ -37,3 +37,6 @@ build/
 
 ### cookies ###
 cookies.txt
+
+### service account keys ###
+/src/main/resources/*.json
