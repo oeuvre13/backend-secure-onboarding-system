@@ -49,30 +49,36 @@ public class SecurityConfig {
                 .maxSessionsPreventsLogin(false) // Allow new login to invalidate old session
             )
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints - NO AUTHENTICATION REQUIRED
-                .requestMatchers("/auth/register").permitAll()
-                .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/auth/check-password").permitAll()
-                .requestMatchers("/auth/validate-nik").permitAll()
-                .requestMatchers("/auth/health").permitAll()
-                .requestMatchers("/auth/check-auth").permitAll()
-                .requestMatchers("/verification/**").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // Protected endpoints - AUTHENTICATION REQUIRED
-                .requestMatchers("/auth/profile").authenticated()
-                .requestMatchers("/auth/stats").authenticated()
-                .requestMatchers("/auth/me").authenticated()
-                .requestMatchers("/auth/refresh-token").authenticated()
-                .requestMatchers("/auth/verify-email").authenticated()
-                .requestMatchers("/protected-resource").authenticated()
-                .requestMatchers("/api/**").authenticated()
-                
-                // Default - require authentication for all other requests
-                .anyRequest().authenticated()
-            )
+            // Public endpoints yang sudah ada
+            .requestMatchers("/auth/register").permitAll()
+            .requestMatchers("/auth/login").permitAll()
+            .requestMatchers("/auth/check-password").permitAll()
+            .requestMatchers("/auth/validate-nik").permitAll()
+            .requestMatchers("/auth/health").permitAll()
+            .requestMatchers("/auth/check-auth").permitAll()
+            .requestMatchers("/verification/**").permitAll()
+            .requestMatchers("/actuator/health").permitAll()
+            .requestMatchers("/error").permitAll()
+            
+            // TAMBAH YANG INI untuk Swagger:
+            .requestMatchers("/swagger-ui/**").permitAll()
+            .requestMatchers("/swagger-ui.html").permitAll()
+            .requestMatchers("/v3/api-docs/**").permitAll()
+            .requestMatchers("/v3/api-docs").permitAll()
+            
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            
+            // Protected endpoints
+            .requestMatchers("/auth/profile").authenticated()
+            .requestMatchers("/auth/stats").authenticated()
+            .requestMatchers("/auth/me").authenticated()
+            .requestMatchers("/auth/refresh-token").authenticated()
+            .requestMatchers("/auth/verify-email").authenticated()
+            .requestMatchers("/protected-resource").authenticated()
+            .requestMatchers("/api/**").authenticated()
+            
+            .anyRequest().authenticated()
+        )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> headers
