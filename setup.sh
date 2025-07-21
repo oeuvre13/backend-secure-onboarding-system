@@ -8,7 +8,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=password
 JWT_SECRET=mySecretKey123456789mySecretKey123456789
 JWT_EXPIRATION=86400000
-SERVER_PORT=8083
+SERVER_PORT=8080
 EOF
 echo ".env berhasil dibuat."
 
@@ -21,7 +21,7 @@ echo ".env berhasil dibuat."
 
 echo "Menjalankan skrip SQL: database_setup_FIXED.sql"
 # Menggunakan PGPASSWORD untuk menghindari prompt password
-PGPASSWORD=password psql -h localhost -U postgres -d customer_registration -f ./sql/database_setup_FIXED.sql
+PGPASSWORD=password psql -h localhost -U postgres -f ./sql/database_setup_FIXED.sql
 
 if [ $? -eq 0 ]; then
     echo "database_setup_FIXED.sql berhasil dijalankan."
@@ -31,7 +31,7 @@ else
 fi
 
 echo "Menjalankan skrip SQL: clean_db.sql"
-PGPASSWORD=password psql -h localhost -U postgres -d customer_registration -f ./sql/clean_db.sql
+PGPASSWORD=password psql -h localhost -U postgres -f ./sql/clean_db.sql
 
 if [ $? -eq 0 ]; then
     echo "clean_db.sql berhasil dijalankan."
@@ -49,4 +49,4 @@ echo "Menjalankan aplikasi Spring Boot dengan ./mvnw spring-boot:run"
 # nohup ./mvnw spring-boot:run > app.log 2>&1 &
 # echo "Aplikasi Spring Boot sedang berjalan di background. Lihat app.log untuk output."
 # Jika kamu menjalankan di background, kamu perlu cara lain untuk mematikan aplikasi,
-# misalnya dengan mencari PID dan membunuhnya: kill $(lsof -t -i:8083)
+# misalnya dengan mencari PID dan membunuhnya: kill $(lsof -t -i:8080)
