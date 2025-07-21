@@ -1,118 +1,166 @@
-// package com.reg.regis.service;
+package com.reg.regis.service;
 
-// import com.reg.regis.repository.CustomerRepository;
-// import com.reg.regis.security.JwtUtil;
-// import com.reg.regis.model.Customer;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.Mock;
-// import org.mockito.InjectMocks;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.springframework.security.crypto.password.PasswordEncoder;
-// import static org.mockito.Mockito.*;
-// import static org.junit.jupiter.api.Assertions.*;
-// import java.util.Optional;
+import com.reg.regis.dto.request.RegistrationRequest;
+import com.reg.regis.dto.response.DukcapilResponseDto;
+import com.reg.regis.model.Customer;
+import com.reg.regis.repository.CustomerRepository;
+import com.reg.regis.security.JwtUtil;
+import com.reg.regis.test.factory.TestDataFactory;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Optional;
+import java.util.HashMap;
 
-// @ExtendWith(MockitoExtension.class)
-// class RegistrationServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-//     @Mock
-//     private CustomerRepository customerRepository;
+@ExtendWith(MockitoExtension.class)
+public
+class RegistrationServiceTest {
+
+    @Mock
+    private CustomerRepository customerRepository;
     
-//     @Mock
-//     private PasswordEncoder passwordEncoder;
+    @Mock
+    private PasswordEncoder passwordEncoder;
     
-//     @Mock
-//     private JwtUtil jwtUtil;
+    @Mock
+    private JwtUtil jwtUtil;
     
-//     @Mock
-//     private DukcapilClientService dukcapilClientService;
+    @Mock
+    private DukcapilClientService dukcapilClientService;
     
-//     @InjectMocks
-//     private RegistrationService registrationService;
+    @InjectMocks
+    private RegistrationService registrationService;
 
-//     @BeforeEach
-//     void setUp() {
-//         // Setup default behavior
-//     }
+    @Test
+    void testRegisterCustomer_DukcapilServiceDown() {
+        // Given
+        RegistrationRequest request = new RegistrationRequest();
+        request.setEmail("test@example.com");
+        
+        when(dukcapilClientService.isDukcapilServiceHealthy()).thenReturn(false);
 
-//     @Test
-//     void testValidateNikFormat_ValidNik() {
-//         String validNik = "1234567890123456";
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, 
+            () -> registrationService.registerCustomer(request));
         
-//         boolean result = registrationService.validateNikFormat(validNik);
+        assertEquals("Dukcapil service tidak tersedia. Silakan coba lagi nanti.", 
+            exception.getMessage());
         
-//         assertTrue(result);
-//     }
+        verify(customerRepository, never()).save(any());
+    }
+    
+    @Test
+    void testRegisterCustomer_EmailAlreadyExists() {
+        // Given
+        RegistrationRequest request = new RegistrationRequest();
+        request.setEmail("john.doe@example.com");
+        request.setNik("3175031234567890");
+        request.setNamaLengkap("John Doe");
+        
+        when(dukcapilClientService.isDukcapilServiceHealthy()).thenReturn(true);
+        
+        DukcapilResponseDto mockResponse = new DukcapilResponseDto();
+        mockResponse.setValid(true);
+        mockResponse.setMessage("Data valid");
+        mockResponse.setData(new HashMap<>());
+        
+        when(dukcapilClientService.verifyNikNameAndBirthDate(anyString(), anyString(), any()))
+            .thenReturn(mockResponse);
+        
+        when(customerRepository.existsByEmailIgnoreCase("john.doe@example.com")).thenReturn(true);
 
-//     @Test
-//     void testValidateNikFormat_InvalidNik() {
-//         String invalidNik = "123abc";
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, 
+            () -> registrationService.registerCustomer(request));
         
-//         boolean result = registrationService.validateNikFormat(invalidNik);
-        
-//         assertFalse(result);
-//     }
+        assertTrue(exception.getMessage().contains("Email john.doe@example.com sudah terdaftar"));
+        verify(customerRepository, never()).save(any());
+    }
+    
+    @Test
+    void testValidateNikFormat_ValidNik() {
+        // Given
+        String validNik = "3175031234567890";
 
-//     @Test
-//     void testCheckPasswordStrength_WeakPassword() {
-//         String weakPassword = "123";
-        
-//         String result = registrationService.checkPasswordStrength(weakPassword);
-        
-//         assertEquals("lemah", result);
-//     }
+        // When
+        boolean result = registrationService.validateNikFormat(validNik);
 
-//     @Test
-//     void testCheckPasswordStrength_StrongPassword() {
-//         String strongPassword = "Test123@Strong";
+        // Then
+        assertTrue(result);
+    }
+    
+    @Test
+    void testValidateNikFormat_InvalidNik() {
+        // When & Then
+        assertFalse(registrationService.validateNikFormat("123")); // Too short
+        assertFalse(registrationService.validateNikFormat("1234567890123456a")); // Contains letter
+        assertFalse(registrationService.validateNikFormat(null)); // Null
+    }
+    
+    @Test
+    void testCheckPasswordStrength() {
+        // When & Then
+        assertEquals("lemah", registrationService.checkPasswordStrength("123"));
+        assertEquals("sedang", registrationService.checkPasswordStrength("Password123"));
+        assertEquals("kuat", registrationService.checkPasswordStrength("Password123!"));
+    }
+    
+    @Test
+    void testAuthenticateCustomer_Success() {
+        // Given
+        Customer customer = TestDataFactory.createJohnDoe();
+        customer.setEmail("john.doe@example.com");
+        customer.setPassword("encoded_password");
         
-//         String result = registrationService.checkPasswordStrength(strongPassword);
-        
-//         assertEquals("kuat", result);
-//     }
+        when(customerRepository.findByEmailIgnoreCase("john.doe@example.com"))
+            .thenReturn(Optional.of(customer));
+        when(passwordEncoder.matches("JohnDoe123!", "encoded_password")).thenReturn(true);
+        when(jwtUtil.generateToken("john.doe@example.com")).thenReturn("jwt_token");
 
-//     @Test
-//     void testGetCustomerByEmail() {
-//         String email = "test@example.com";
-//         Customer mockCustomer = new Customer();
-//         mockCustomer.setEmail(email);
-        
-//         when(customerRepository.findByEmailIgnoreCase(email))
-//             .thenReturn(Optional.of(mockCustomer));
-        
-//         Optional<Customer> result = registrationService.getCustomerByEmail(email);
-        
-//         assertTrue(result.isPresent());
-//         assertEquals(email, result.get().getEmail());
-//     }
+        // When
+        String token = registrationService.authenticateCustomer("john.doe@example.com", "JohnDoe123!");
 
-//     @Test
-//     void testVerifyEmail() {
-//         String email = "test@example.com";
-//         Customer mockCustomer = new Customer();
-//         mockCustomer.setEmail(email);
-//         mockCustomer.setEmailVerified(false);
+        // Then
+        assertEquals("jwt_token", token);
+    }
+    
+    @Test
+    void testAuthenticateCustomer_WrongPassword() {
+        // Given
+        Customer customer = TestDataFactory.createJohnDoe();
+        customer.setEmail("john.doe@example.com");
+        customer.setPassword("encoded_password");
         
-//         when(customerRepository.findByEmailIgnoreCase(email))
-//             .thenReturn(Optional.of(mockCustomer));
-        
-//         registrationService.verifyEmail(email);
-        
-//         assertTrue(mockCustomer.getEmailVerified());
-//         verify(customerRepository).save(mockCustomer);
-//     }
+        when(customerRepository.findByEmailIgnoreCase("john.doe@example.com"))
+            .thenReturn(Optional.of(customer));
+        when(passwordEncoder.matches("wrongpassword", "encoded_password")).thenReturn(false);
 
-//     @Test
-//     void testValidateToken() {
-//         String token = "valid.jwt.token";
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, 
+            () -> registrationService.authenticateCustomer("john.doe@example.com", "wrongpassword"));
         
-//         when(jwtUtil.validateToken(token)).thenReturn(true);
-        
-//         boolean result = registrationService.validateToken(token);
-        
-//         assertTrue(result);
-//         verify(jwtUtil).validateToken(token);
-//     }
-// }
+        assertEquals("Email atau password salah", exception.getMessage());
+    }
+    
+    @Test
+    void testGetCustomerByEmail() {
+        // Given
+        Customer customer = TestDataFactory.createJohnDoe();
+        when(customerRepository.findByEmailIgnoreCase("john.doe@example.com"))
+            .thenReturn(Optional.of(customer));
+
+        // When
+        Optional<Customer> result = registrationService.getCustomerByEmail("john.doe@example.com");
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals("John Doe", result.get().getNamaLengkap());
+    }
+}
