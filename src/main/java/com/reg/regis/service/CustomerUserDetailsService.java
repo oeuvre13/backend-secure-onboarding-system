@@ -1,4 +1,3 @@
-// src/main/java/com/reg/regis/service/CustomerUserDetailsService.java
 package com.reg.regis.service;
 
 import com.reg.regis.model.Customer;

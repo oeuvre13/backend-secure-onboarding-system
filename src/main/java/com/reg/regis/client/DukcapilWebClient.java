@@ -18,7 +18,7 @@ public class DukcapilWebClient {
 
     private final WebClient webClient;
 
-    @Value("${dukcapil.api.key:dukcapil-secret-key-123}")
+    @Value("${dukcapil.api.key}")
     private String apiKey;
 
     public DukcapilWebClient(@Value("${dukcapil.service.url:http://localhost:8081}") String baseUrl) {
