@@ -1,6 +1,6 @@
 # 🚀 cURL & Postman Guide untuk Customer Registration Service
 
-## 📋 **Base URL:** `http://localhost:8083/api`
+## 📋 **Base URL:** `http://localhost:8080/api`
 
 ---
 
@@ -12,15 +12,15 @@
 
 ```bash
 echo "📊 Health Checks:"
-curl -X GET "http://localhost:8083/api/auth/health" | jq
-curl -X GET "http://localhost:8083/api/verification/health" | jq
+curl -X GET "http://localhost:8080/api/auth/health" | jq
+curl -X GET "http://localhost:8080/api/verification/health" | jq
 ```
 
 #### 2. NIK Verification Tests (Real Dukcapil Data)
 
 ```bash
 echo "🔍 Testing John Doe (Valid):"
-curl -X POST "http://localhost:8083/api/verification/nik" \
+curl -X POST "http://localhost:8080/api/verification/nik" \
   -H "Content-Type: application/json" \
   -d '{
     "nik": "3175031234567890",
@@ -29,7 +29,7 @@ curl -X POST "http://localhost:8083/api/verification/nik" \
   }' | jq
 
 echo "🔍 Testing Jane Smith (Valid):"
-curl -X POST "http://localhost:8083/api/verification/nik" \
+curl -X POST "http://localhost:8080/api/verification/nik" \
   -H "Content-Type: application/json" \
   -d '{
     "nik": "3175032345678901",
@@ -38,7 +38,7 @@ curl -X POST "http://localhost:8083/api/verification/nik" \
   }' | jq
 
 echo "🔍 Testing Ahmad Rahman (Valid):"
-curl -X POST "http://localhost:8083/api/verification/nik" \
+curl -X POST "http://localhost:8080/api/verification/nik" \
   -H "Content-Type: application/json" \
   -d '{
     "nik": "3175033456789012",
@@ -47,7 +47,7 @@ curl -X POST "http://localhost:8083/api/verification/nik" \
   }' | jq
 
 echo "🔍 Testing Test User One (Valid):"
-curl -X POST "http://localhost:8083/api/verification/nik" \
+curl -X POST "http://localhost:8080/api/verification/nik" \
   -H "Content-Type: application/json" \
   -d '{
     "nik": "1234567890123456",
@@ -56,7 +56,7 @@ curl -X POST "http://localhost:8083/api/verification/nik" \
   }' | jq
 
 echo "❌ Testing Invalid Name:"
-curl -X POST "http://localhost:8083/api/verification/nik" \
+curl -X POST "http://localhost:8080/api/verification/nik" \
   -H "Content-Type: application/json" \
   -d '{
     "nik": "3175031234567890",
@@ -69,11 +69,11 @@ curl -X POST "http://localhost:8083/api/verification/nik" \
 
 ```bash
 echo "🔍 NIK Check Tests:"
-curl -X POST "http://localhost:8083/api/verification/nik-check" \
+curl -X POST "http://localhost:8080/api/verification/nik-check" \
   -H "Content-Type: application/json" \
   -d '{"nik": "3175031234567890"}' | jq
 
-curl -X POST "http://localhost:8083/api/verification/nik-check" \
+curl -X POST "http://localhost:8080/api/verification/nik-check" \
   -H "Content-Type: application/json" \
   -d '{"nik": "1234567890123456"}' | jq
 ```
@@ -82,20 +82,20 @@ curl -X POST "http://localhost:8083/api/verification/nik-check" \
 
 ```bash
 echo "📧 Email Verification Tests:"
-curl -X POST "http://localhost:8083/api/verification/email" \
+curl -X POST "http://localhost:8080/api/verification/email" \
   -H "Content-Type: application/json" \
   -d '{"email": "newuser@example.com"}' | jq
 
-curl -X POST "http://localhost:8083/api/verification/email" \
+curl -X POST "http://localhost:8080/api/verification/email" \
   -H "Content-Type: application/json" \
   -d '{"email": "existing@example.com"}' | jq
 
 echo "📱 Phone Verification Tests:"
-curl -X POST "http://localhost:8083/api/verification/phone" \
+curl -X POST "http://localhost:8080/api/verification/phone" \
   -H "Content-Type: application/json" \
   -d '{"nomorTelepon": "081999888777"}' | jq
 
-curl -X POST "http://localhost:8083/api/verification/phone" \
+curl -X POST "http://localhost:8080/api/verification/phone" \
   -H "Content-Type: application/json" \
   -d '{"nomorTelepon": "081234567890"}' | jq
 ```
@@ -104,14 +104,14 @@ curl -X POST "http://localhost:8083/api/verification/phone" \
 
 ```bash
 echo "✅ NIK Format Validation:"
-curl -X POST "http://localhost:8083/api/auth/validate-nik" \
-curl -X POST "http://localhost:8083/api/auth/validate-nik" \
+curl -X POST "http://localhost:8080/api/auth/validate-nik" \
+curl -X POST "http://localhost:8080/api/auth/validate-nik" \
   -H "Content-Type: application/json" \
   -d '{"nik": "3175031234567890"}' | jq
 
 echo "🔒 Password Strength Check:"
-curl -X POST "http://localhost:8083/api/auth/check-password" \
-curl -X POST "http://localhost:8083/api/auth/check-password" \
+curl -X POST "http://localhost:8080/api/auth/check-password" \
+curl -X POST "http://localhost:8080/api/auth/check-password" \
   -H "Content-Type: application/json" \
   -d '{"password": "JohnDoe123!"}' | jq
 ```
@@ -159,7 +159,7 @@ curl -X POST "http://localhost:8080/api/auth/register" \
   }' | jq
 
 echo "👤 Registration Test - Jane Smith (Gold):"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -198,7 +198,7 @@ curl -X POST "http://localhost:8083/api/auth/register" \
   }' | jq
 
 echo "👤 Registration Test - Foreign Customer (Platinum):"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -238,7 +238,7 @@ curl -X POST "http://localhost:8083/api/auth/register" \
   }' | jq
 
 echo "👤 Registration Test - Batik Air Customer:"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -286,9 +286,9 @@ curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
 
 echo "👤 Jane Profile (using auto-login cookie):"
-curl -X GET "http://localhost:8083/api/auth/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
 echo "👤 Profile Access Tests:"
-curl -X GET "http://localhost:8083/api/auth/profile" \
+curl -X GET "http://localhost:8080/api/auth/profile" \
   -b cookies.txt | jq
 ```
 
@@ -304,7 +304,7 @@ curl -X POST "http://localhost:8080/api/auth/login" \
     "password": "JohnDoe123!"
   }' | jq
 
-curl -X POST "http://localhost:8083/api/auth/login" \
+curl -X POST "http://localhost:8080/api/auth/login" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -312,7 +312,7 @@ curl -X POST "http://localhost:8083/api/auth/login" \
     "password": "RobertWilson123!"
   }' | jq
 
-curl -X POST "http://localhost:8083/api/auth/login" \
+curl -X POST "http://localhost:8080/api/auth/login" \
   -H "Content-Type: application/json" \
   -c cookies.txt \
   -d '{
@@ -329,16 +329,16 @@ curl -X GET "http://localhost:8080/api/auth/me" \
   -b cookies.txt | jq
 
 echo "✅ Check Auth Status:"
-curl -X GET "http://localhost:8083/api/auth/check-auth" \
+curl -X GET "http://localhost:8080/api/auth/check-auth" \
   -b cookies.txt | jq
 
 echo "🔄 Refresh Token:"
-curl -X POST "http://localhost:8083/api/auth/refresh-token" \
+curl -X POST "http://localhost:8080/api/auth/refresh-token" \
   -b cookies.txt \
   -c refresh_cookies.txt | jq
 
 echo "🚪 Logout:"
-curl -X POST "http://localhost:8083/api/auth/logout" \
+curl -X POST "http://localhost:8080/api/auth/logout" \
   -b cookies.txt | jq
 ```
 
@@ -346,9 +346,9 @@ curl -X POST "http://localhost:8083/api/auth/logout" \
 
 ```bash
 echo "📊 Statistics:"
-curl -X GET "http://localhost:8083/api/auth/stats" | jq
-curl -X GET "http://localhost:8083/api/auth/stats" | jq
-curl -X GET "http://localhost:8083/api/verification/stats" | jq
+curl -X GET "http://localhost:8080/api/auth/stats" | jq
+curl -X GET "http://localhost:8080/api/auth/stats" | jq
+curl -X GET "http://localhost:8080/api/verification/stats" | jq
 ```
 
 ---
@@ -363,7 +363,7 @@ curl -X GET "http://localhost:8083/api/verification/stats" | jq
   "values": [
     {
       "key": "base_url",
-      "value": "http://localhost:8083/api",
+      "value": "http://localhost:8080/api",
       "enabled": true
     },
     {
@@ -608,7 +608,7 @@ echo "❌ VALIDATION ERROR TESTS untuk JenisKartu"
 
 ## 1. Invalid JenisKartu
 echo "Testing Invalid JenisKartu:"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "Test User",
@@ -622,7 +622,7 @@ curl -X POST "http://localhost:8083/api/auth/register" \
 
 ## 2. Missing JenisKartu
 echo "Testing Missing JenisKartu:"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "Test User",
@@ -635,7 +635,7 @@ curl -X POST "http://localhost:8083/api/auth/register" \
 
 ## 3. Empty JenisKartu
 echo "Testing Empty JenisKartu:"
-curl -X POST "http://localhost:8083/api/auth/register" \
+curl -X POST "http://localhost:8080/api/auth/register" \
   -H "Content-Type: application/json" \
   -d '{
     "namaLengkap": "Test User",
