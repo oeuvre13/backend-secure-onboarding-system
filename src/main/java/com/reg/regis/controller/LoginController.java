@@ -3,6 +3,14 @@ package com.reg.regis.controller;
 import com.reg.regis.model.Customer;
 import com.reg.regis.service.RegistrationService;
 import com.reg.regis.security.SecurityUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +28,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication API", description = "API untuk login, logout, dan manajemen session")
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 @Validated
 public class LoginController {
@@ -36,10 +45,21 @@ public class LoginController {
     /**
      * Customer login with secure cookie-based auth
      */
+    @Operation(
+        summary = "Login Customer",
+        description = "Autentikasi customer dengan email dan password, mengembalikan JWT token dalam secure cookie"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login berhasil"),
+        @ApiResponse(responseCode = "400", description = "Email atau password salah"),
+        @ApiResponse(responseCode = "429", description = "Too many login attempts")
+    })
     @PostMapping("/login")
-    public ResponseEntity<?> loginCustomer(@Valid @RequestBody LoginRequest loginRequest, 
-                                         HttpServletRequest request, 
-                                         HttpServletResponse response) {
+    public ResponseEntity<?> loginCustomer(
+        @Parameter(description = "Data login (email dan password)")
+        @Valid @RequestBody LoginRequest loginRequest, 
+        HttpServletRequest request, 
+        HttpServletResponse response) {
         try {
             // Rate limiting check (implement this later in A04)
             String clientIp = SecurityUtil.getClientIpAddress(request);
@@ -84,9 +104,21 @@ public class LoginController {
     /**
      * Get current authenticated user
      */
+    @Operation(
+        summary = "Get Current User",
+        description = "Mendapatkan informasi user yang sedang login berdasarkan JWT token"
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User data berhasil diambil"),
+        @ApiResponse(responseCode = "401", description = "Token tidak valid atau expired")
+    })
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@CookieValue(value = "authToken", required = false) String cookieToken,
-                                            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> getCurrentUser(
+        @Parameter(description = "JWT Token dari cookie") 
+        @CookieValue(value = "authToken", required = false) String cookieToken,
+        @Parameter(description = "JWT Token dari Authorization header")
+        @RequestHeader(value = "Authorization", required = false) String authHeader) {
         String token = extractToken(authHeader, cookieToken);
 
         try {
@@ -119,6 +151,11 @@ public class LoginController {
     /**
      * Secure logout - clear cookie
      */
+    @Operation(
+        summary = "Logout",
+        description = "Logout user dan hapus secure cookie"
+    )
+    @ApiResponse(responseCode = "200", description = "Logout berhasil")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         // Clear the auth cookie securely
@@ -135,10 +172,22 @@ public class LoginController {
     /**
      * Refresh JWT token
      */
+    @Operation(
+        summary = "Refresh JWT Token",
+        description = "Generate JWT token baru berdasarkan token yang masih valid"
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Token berhasil diperbarui"),
+        @ApiResponse(responseCode = "401", description = "Token tidak valid")
+    })
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@CookieValue(value = "authToken", required = false) String cookieToken,
-                                          @RequestHeader(value = "Authorization", required = false) String authHeader,
-                                          HttpServletResponse response) {
+    public ResponseEntity<?> refreshToken(
+        @Parameter(description = "JWT Token dari cookie")
+        @CookieValue(value = "authToken", required = false) String cookieToken,
+        @Parameter(description = "JWT Token dari Authorization header")
+        @RequestHeader(value = "Authorization", required = false) String authHeader,
+        HttpServletResponse response) {
         String token = extractToken(authHeader, cookieToken);
 
         try {
@@ -172,9 +221,17 @@ public class LoginController {
     /**
      * Check authentication status (PUBLIC ENDPOINT)
      */
+    @Operation(
+        summary = "Check Authentication Status",
+        description = "Cek apakah user masih ter-autentikasi (endpoint public)"
+    )
+    @ApiResponse(responseCode = "200", description = "Status autentikasi")
     @GetMapping("/check-auth")
-    public ResponseEntity<?> checkAuthentication(@CookieValue(value = "authToken", required = false) String cookieToken,
-                                                  @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> checkAuthentication(
+        @Parameter(description = "JWT Token dari cookie")
+        @CookieValue(value = "authToken", required = false) String cookieToken,
+        @Parameter(description = "JWT Token dari Authorization header")
+        @RequestHeader(value = "Authorization", required = false) String authHeader) {
         String token = extractToken(authHeader, cookieToken);
 
         try {
@@ -255,12 +312,15 @@ public class LoginController {
     /**
      * Login request DTO with validation
      */
+    @Schema(description = "Login request dengan email dan password")
     public static class LoginRequest {
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")
+        @Schema(description = "Email customer", example = "john.doe@example.com")
         private String email;
         
         @NotBlank(message = "Password is required")
+        @Schema(description = "Password customer", example = "JohnDoe123!")
         private String password;
         
         public String getEmail() { return email; }
