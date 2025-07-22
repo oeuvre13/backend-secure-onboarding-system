@@ -11,7 +11,7 @@ DB_PASSWORD=password
 JWT_SECRET=mySecretKey123456789mySecretKey123456789
 JWT_EXPIRATION=86400000
 SERVER_PORT=8081
-
+DUKCAPIL_SERVICE_URL=http://dukcapil-dummy:8081
 FIREBASE_CONFIG_PATH="model-parsec-465503-p3-firebase-adminsdk-fbsvc-1e9901efad.json"
 ```
 
