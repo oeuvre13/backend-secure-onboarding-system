@@ -1,6 +1,7 @@
 package com.reg.regis.security;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders; // Import this for Base64 decoding
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ public class JwtUtil {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     
     @Value("${app.jwt.secret}")
-    private String secret;
+    private String secret; // This should be a Base64 encoded string of at least 64 bytes
     
     @Value("${app.jwt.expiration}")
     private long expiration;
@@ -26,11 +27,41 @@ public class JwtUtil {
     
     private static final String AUDIENCE = "customer-app";
     
+    /**
+     * Retrieves the signing key for JWT.
+     * The 'secret' property is expected to be a Base64 encoded string.
+     * It must decode to at least 64 bytes (512 bits) for HS512.
+     */
     private Key getSigningKey() {
-        if (secret == null || secret.length() < 32) {
-            throw new IllegalStateException("JWT secret must be at least 32 characters long");
+        if (secret == null || secret.isEmpty()) {
+            logger.error("JWT secret is null or empty. Please configure 'app.jwt.secret' in application.properties.");
+            throw new IllegalStateException("JWT secret cannot be empty. Please configure 'app.jwt.secret' with a Base64 encoded key.");
         }
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        
+        try {
+            // Decode the Base64 secret string into a byte array.
+            byte[] keyBytes = Decoders.BASE64.decode(secret);
+            
+            // HS512 requires a key size of at least 512 bits (64 bytes).
+            if (keyBytes.length < 64) {
+                logger.error("JWT secret (after Base64 decoding) is {} bytes, but HS512 requires at least 64 bytes (512 bits). " +
+                             "Please generate a stronger key for 'app.jwt.secret'.", keyBytes.length);
+                throw new IllegalStateException("JWT secret is too short for HS512. It must be a Base64 encoded string representing at least 64 bytes.");
+            }
+            
+            // Create an HMAC-SHA key from the decoded bytes.
+            return Keys.hmacShaKeyFor(keyBytes);
+            
+        } catch (IllegalArgumentException e) {
+            // This catches errors if the 'secret' string is not a valid Base64 format.
+            logger.error("Invalid Base64 string provided for 'app.jwt.secret'. Please ensure it's a valid Base64 encoded key: {}", e.getMessage());
+            throw new IllegalStateException("JWT secret is not a valid Base64 string. " +
+                                           "Please ensure 'app.jwt.secret' is a Base64 encoded key.", e);
+        } catch (Exception e) {
+            // Catch any other unexpected errors during key generation.
+            logger.error("An unexpected error occurred while generating the signing key: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to generate JWT signing key.", e);
+        }
     }
     
     /**
@@ -92,7 +123,7 @@ public class JwtUtil {
             logger.warn("Invalid JWT signature: {}", e.getMessage());
             return null;
         } catch (IllegalArgumentException e) {
-            logger.warn("JWT claims string is empty: {}", e.getMessage());
+            logger.warn("JWT claims string is empty or invalid: {}", e.getMessage());
             return null;
         } catch (Exception e) {
             logger.error("Unexpected error extracting email from JWT: {}", e.getMessage());
@@ -133,7 +164,7 @@ public class JwtUtil {
             logger.warn("Invalid JWT signature: {}", e.getMessage());
             return false;
         } catch (IllegalArgumentException e) {
-            logger.warn("JWT claims string is empty: {}", e.getMessage());
+            logger.warn("JWT claims string is empty or invalid: {}", e.getMessage());
             return false;
         } catch (Exception e) {
             logger.error("Unexpected error validating JWT: {}", e.getMessage());
@@ -155,8 +186,8 @@ public class JwtUtil {
             return claims.getExpiration().before(new Date());
             
         } catch (Exception e) {
-            logger.debug("Error checking token expiration: {}", e.getMessage());
-            return true; // Treat any parsing error as expired
+            logger.debug("Error checking token expiration (token might be invalid or malformed): {}", e.getMessage());
+            return true; // Treat any parsing error as expired or invalid
         }
     }
     
