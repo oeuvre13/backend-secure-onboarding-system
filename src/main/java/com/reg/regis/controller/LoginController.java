@@ -2,12 +2,12 @@ package com.reg.regis.controller;
 
 import com.reg.regis.model.Customer;
 import com.reg.regis.service.RegistrationService;
-import com.reg.regis.security.SecurityUtil;
+// import com.reg.regis.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.media.Content;
+// import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -65,7 +65,7 @@ public class LoginController {
         HttpServletResponse response) {
         try {
             // Rate limiting check (implement this later in A04)
-            String clientIp = SecurityUtil.getClientIpAddress(request);
+            // String clientIp = SecurityUtil.getClientIpAddress(request);
             
             String token = registrationService.authenticateCustomer(
                 loginRequest.getEmail(), 
@@ -313,7 +313,7 @@ public class LoginController {
         customerData.put("email", customer.getEmail());
         customerData.put("nomorTelepon", customer.getNomorTelepon());
         customerData.put("tipeAkun", customer.getTipeAkun());
-        customerData.put("emailVerified", customer.getEmailVerified());
+        // customerData.put("emailVerified", customer.getEmailVerified());
         customerData.put("jenisKartu", customer.getJenisKartu() != null ? customer.getJenisKartu() : "Silver");
         
         // Only include address if present

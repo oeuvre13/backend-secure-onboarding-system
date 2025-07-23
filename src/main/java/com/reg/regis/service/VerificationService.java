@@ -79,7 +79,7 @@ public class VerificationService {
                     Map<String, Object> emailData = new HashMap<>();
                     emailData.put("email", customer.getEmail());
                     emailData.put("namaLengkap", customer.getNamaLengkap());
-                    emailData.put("emailVerified", customer.getEmailVerified());
+                    // emailData.put("emailVerified", customer.getEmailVerified());
                     emailData.put("registeredAt", customer.getCreatedAt());
                     
                     return new VerificationResponse(

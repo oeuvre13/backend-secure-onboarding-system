@@ -256,7 +256,7 @@ public class RegistrationService {
         customer.setRentangGaji(request.getRentangGaji());
         customer.setTujuanPembuatanRekening(request.getTujuanPembuatanRekening());
         customer.setKodeRekening(request.getKodeRekening()); // Generated code
-        customer.setEmailVerified(false);
+        // customer.setEmailVerified(false);
         
         // Set jenisKartu dan nomor kartu debit virtual
         customer.setJenisKartu(jenisKartu);
@@ -393,7 +393,7 @@ public class RegistrationService {
         Optional<Customer> customerOpt = customerRepository.findByEmailIgnoreCase(email);
         if (customerOpt.isPresent()) {
             Customer customer = customerOpt.get();
-            customer.setEmailVerified(true);
+            // customer.setEmailVerified(true);
             customerRepository.save(customer);
         }
     }

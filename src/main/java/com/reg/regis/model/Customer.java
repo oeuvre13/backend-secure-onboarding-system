@@ -100,9 +100,10 @@ public class Customer {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @Column(name = "email_verified", nullable = false)
-    @JsonIgnore
-    private Boolean emailVerified = false;
+    // SEANDAINYA DIIMPLEMENTASIKAN EMAIL VERIFICATION
+    // @Column(name = "email_verified", nullable = false)
+    // @JsonIgnore
+    // private Boolean emailVerified = false;
     
     // FAILED LOGIN ATTEMPTS
     @JsonIgnore
@@ -209,8 +210,9 @@ public class Customer {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     
-    public Boolean getEmailVerified() { return emailVerified; }
-    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+    // SEANDAINYA DIIMPLEMENTASIKAN EMAIL VERIFICATION
+    // public Boolean getEmailVerified() { return emailVerified; }
+    // public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
     
     // NEW GETTER/SETTER: untuk mekaniksme maksimum login gagal
     public LocalDateTime getAccountLockedUntil() { return accountLockedUntil; }
