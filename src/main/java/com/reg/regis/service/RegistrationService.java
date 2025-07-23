@@ -9,9 +9,12 @@ import com.reg.regis.model.Wali;
 import com.reg.regis.repository.CustomerRepository;
 import com.reg.regis.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+// import org.springframework.transaction.annotation.Propagation; // Hapus ini jika tidak lagi digunakan secara langsung di sini
+
 import java.util.Optional;
 import java.util.Map;
 import java.security.SecureRandom;
@@ -20,6 +23,19 @@ import java.time.LocalDateTime;
 @Service
 public class RegistrationService {
     
+    // Hapus konstanta terkait login attempts, mereka sekarang di LoginAttemptService
+    // private static final int MAX_LOGIN_ATTEMPTS = 5;
+    // private static final long LOCKOUT_DURATION_MINUTES = 1; 
+
+    // Hapus injeksi diri
+    // @Autowired
+    // private RegistrationService self;
+    
+    // START MODIFIKASI: Injeksi LoginAttemptService yang baru
+    @Autowired
+    private LoginAttemptService loginAttemptService;
+    // END MODIFIKASI
+
     @Autowired
     private CustomerRepository customerRepository;
     
@@ -274,12 +290,12 @@ public class RegistrationService {
         
         // Return response DTO dengan data yang diminta
         return new RegistrationResponse(
-        savedCustomer.getJenisKartu(),
-        savedCustomer.getNamaLengkap(),
-        String.valueOf(savedCustomer.getKodeRekening()),
-        savedCustomer.getTipeAkun(), // ✅ Ini akan jadi jenisTabungan
-        savedCustomer.getNomorKartuDebitVirtual()
-);
+            savedCustomer.getJenisKartu(),
+            savedCustomer.getNamaLengkap(),
+            String.valueOf(savedCustomer.getKodeRekening()),
+            savedCustomer.getTipeAkun(), // ✅ Ini akan jadi jenisTabungan
+            savedCustomer.getNomorKartuDebitVirtual()
+        );
     }
     
     // NEW: Method untuk check kode rekening exists (untuk repository)
@@ -301,20 +317,50 @@ public class RegistrationService {
         return dukcapilClientService.isNikExists(nik);
     }
     
+    // Hapus method recordFailedLoginAttempt dari sini, sudah dipindahkan ke LoginAttemptService
+    // @Transactional(propagation = Propagation.REQUIRES_NEW)
+    // private Customer recordFailedLoginAttempt(String email) { ... }
+    
+    @Transactional
     public String authenticateCustomer(String email, String password) {
         Optional<Customer> customerOpt = customerRepository.findByEmailIgnoreCase(email);
         
+        // Cek apakah customer ditemukan
         if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Email atau password salah");
+            // Untuk mencegah enumerasi user, pesan error generik
+            // Jika user tidak ditemukan, tidak ada failed attempts yang di-track
+            throw new BadCredentialsException("Email atau password salah.");
         }
         
         Customer customer = customerOpt.get();
         
-        if (!passwordEncoder.matches(password, customer.getPassword())) {
-            throw new RuntimeException("Email atau password salah");
+        // Cek apakah akun terkunci
+        if (customer.isAccountLocked()) {
+            throw new BadCredentialsException("Akun Anda terkunci karena terlalu banyak percobaan login gagal. Silakan coba lagi setelah " +
+                    loginAttemptService.getLockoutDurationMinutes() + " menit."); // Menggunakan durasi dari LoginAttemptService
         }
-        
-        return jwtUtil.generateToken(customer.getEmail());
+
+        if (passwordEncoder.matches(password, customer.getPassword())) {
+            // Authentication successful: reset failed login attempts
+            customer.setFailedLoginAttempts(0);
+            customer.setAccountLockedUntil(null);
+            customerRepository.save(customer); // Simpan perubahan berhasil
+            return jwtUtil.generateToken(customer.getEmail());
+        } else {
+            // Authentication failed: rekam percobaan gagal melalui LoginAttemptService
+            // START MODIFIKASI: Panggil melalui loginAttemptService
+            Customer updatedCustomer = loginAttemptService.recordFailedLoginAttempt(email);
+            // END MODIFIKASI
+
+            if (updatedCustomer.getFailedLoginAttempts() >= loginAttemptService.getMaxLoginAttempts()) {
+                // Pesan untuk akun terkunci
+                throw new BadCredentialsException("Terlalu banyak percobaan login gagal. Akun Anda telah terkunci selama " +
+                        loginAttemptService.getLockoutDurationMinutes() + " menit."); // Menggunakan durasi dari LoginAttemptService
+            } else {
+                // Pesan untuk sisa percobaan
+                throw new BadCredentialsException("Email atau password salah. Sisa percobaan: " + (loginAttemptService.getMaxLoginAttempts() - updatedCustomer.getFailedLoginAttempts())); // Menggunakan MAX_LOGIN_ATTEMPTS dari LoginAttemptService
+            }
+        }
     }
     
     public Optional<Customer> getCustomerByEmail(String email) {

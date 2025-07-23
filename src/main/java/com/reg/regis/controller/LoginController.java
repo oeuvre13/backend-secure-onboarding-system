@@ -20,11 +20,14 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.http.HttpStatus; // Import HttpStatus
 
 @RestController
 @RequestMapping("/auth")
@@ -92,13 +95,28 @@ public class LoginController {
                 "error", "Authentication failed"
             ));
             
-        } catch (Exception e) {
+        }catch (BadCredentialsException e) {
+            // ** MODIFIKASI UNTUK MAXIMUM LOGIN ATTEMP **
+            String errorMessage = e.getMessage();
+            HttpStatus status = HttpStatus.UNAUTHORIZED; // Default untuk kredensial salah
+
+            if (errorMessage.contains("terkunci") || errorMessage.contains("Too many failed attempts")) {
+                status = HttpStatus.TOO_MANY_REQUESTS; // Gunakan 429 untuk akun terkunci
+            }
+            return ResponseEntity.status(status).body(Map.of(
+                "success", false,
+                "error", errorMessage
+            ));
+            // ** END MODIFIKASI **
+        }  
+        catch (Exception e) {
             // Log security event (implement in A09)
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
                 "error", "Authentication failed"
             ));
         }
+        
     }
     
     /**

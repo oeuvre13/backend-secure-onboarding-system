@@ -104,6 +104,16 @@ public class Customer {
     @JsonIgnore
     private Boolean emailVerified = false;
     
+    // FAILED LOGIN ATTEMPTS
+    @JsonIgnore
+    @Column(name = "failed_login_attempts", nullable = false)
+    private Integer failedLoginAttempts = 0; // Default ke 0
+
+    // ACCOUNT LOCKED UNTIL
+    @JsonIgnore
+    @Column(name = "account_locked_until")
+    private LocalDateTime accountLockedUntil; // Kapan akun akan dibuka
+
     // @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "alamat_id")
@@ -202,6 +212,18 @@ public class Customer {
     public Boolean getEmailVerified() { return emailVerified; }
     public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
     
+    // NEW GETTER/SETTER: untuk mekaniksme maksimum login gagal
+    public LocalDateTime getAccountLockedUntil() { return accountLockedUntil; }
+    public void setAccountLockedUntil(LocalDateTime accountLockedUntil) { this.accountLockedUntil = accountLockedUntil; }
+
+    public Integer getFailedLoginAttempts() { return failedLoginAttempts; }
+    public void setFailedLoginAttempts(Integer failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
+
+    // helper untuk mengecek apakah akun terkunci
+    public boolean isAccountLocked() {
+        return accountLockedUntil != null && accountLockedUntil.isAfter(LocalDateTime.now());
+    }
+
     public Alamat getAlamat() { return alamat; }
     public void setAlamat(Alamat alamat) { this.alamat = alamat; }
     
