@@ -12,6 +12,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
     @Query("SELECT c FROM Customer c WHERE LOWER(c.email) = LOWER(:email)")
     Optional<Customer> findByEmailIgnoreCase(@Param("email") String email);
+
+    @Query("SELECT c FROM Customer c WHERE c.email = :email") // Ini akan melakukan pencarian case-sensitive
+    Optional<Customer> findByEmail(@Param("email") String email);
     
     @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE LOWER(c.email) = LOWER(:email)")
     boolean existsByEmailIgnoreCase(@Param("email") String email);
