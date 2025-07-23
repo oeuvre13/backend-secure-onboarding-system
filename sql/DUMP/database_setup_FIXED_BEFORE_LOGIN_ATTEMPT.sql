@@ -1,27 +1,12 @@
 -- ===== UPDATED DATABASE SETUP SCRIPT =====
--- File: database_setup_for_login_attempts.sql
--- Jalankan dengan: psql postgres -f sql/database_setup_for_login_attempts.sql
-
--- 1. Pastikan fungsi update_updated_at_column ada (jika belum ada di database postgres)
--- Jika fungsi ini sudah ada di instance PostgreSQL Anda, bagian ini bisa dilewati.
--- Anda bisa menjalankan ini sekali saja di database postgres default atau di setiap database baru.
+-- File: database_setup_updated.sql
+-- Jalankan dengan: psql postgres -f sql/database_setup_FIXED.sql
 
 -- 2. Create Database untuk Customer Registration
 DROP DATABASE IF EXISTS customer_registration;
 CREATE DATABASE customer_registration WITH OWNER = postgres;
 
--- 3. Setup Customer Registration Database
-\c customer_registration;
-
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- 3. Setup Customer Registration Database
+-- 4. Setup Customer Registration Database
 \c customer_registration;
 
 -- Drop existing tables
@@ -60,8 +45,8 @@ CREATE TABLE customers (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     tipe_akun VARCHAR(100) NOT NULL,
-    jenis_kartu VARCHAR(50) NOT NULL DEFAULT 'Silver',
-    nomor_kartu_debit_virtual VARCHAR(19) UNIQUE,
+    jenis_kartu VARCHAR(50) NOT NULL DEFAULT 'Silver',  -- NEW FIELD
+    nomor_kartu_debit_virtual VARCHAR(19) UNIQUE,  -- TAMBAHAN FIELD BARU
     tempat_lahir VARCHAR(100) NOT NULL,
     tanggal_lahir DATE NOT NULL,
     jenis_kelamin VARCHAR(20) NOT NULL,
@@ -75,14 +60,8 @@ CREATE TABLE customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     email_verified BOOLEAN DEFAULT FALSE NOT NULL,
-    
-    -- START MODIFIKASI UNTUK FITUR MAKSIMUM LOGIN ATTEMPTS
-    failed_login_attempts INTEGER NOT NULL DEFAULT 0,
-    account_locked_until TIMESTAMP, -- NULLABLE: hanya diisi jika akun terkunci
-    -- END MODIFIKASI
-    
     alamat_id BIGINT,
-    wali_id BIGINT,
+    wali_id BIGINT,  -- NULLABLE - wali sekarang optional
     
     -- Foreign Keys
     CONSTRAINT fk_customer_alamat FOREIGN KEY (alamat_id) REFERENCES alamat(id),
@@ -98,11 +77,10 @@ CREATE INDEX idx_customers_email ON customers(LOWER(email));
 CREATE INDEX idx_customers_phone ON customers(nomor_telepon);
 CREATE INDEX idx_customers_nik ON customers(nik);
 CREATE INDEX idx_customers_verified ON customers(email_verified);
-CREATE INDEX idx_customers_jenis_kartu ON customers(jenis_kartu);
-CREATE INDEX idx_customers_kartu_debit ON customers(nomor_kartu_debit_virtual);
+CREATE INDEX idx_customers_jenis_kartu ON customers(jenis_kartu);  -- NEW INDEX
+CREATE INDEX idx_customers_kartu_debit ON customers(nomor_kartu_debit_virtual);  -- INDEX UNTUK FIELD BARU
 
 -- Create trigger untuk updated_at customers
--- Pastikan fungsi update_updated_at_column sudah dibuat sebelumnya
 CREATE TRIGGER trigger_customers_updated_at
     BEFORE UPDATE ON customers
     FOR EACH ROW
