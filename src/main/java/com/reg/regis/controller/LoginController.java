@@ -2,12 +2,12 @@ package com.reg.regis.controller;
 
 import com.reg.regis.model.Customer;
 import com.reg.regis.service.RegistrationService;
-import com.reg.regis.security.SecurityUtil;
+// import com.reg.regis.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.media.Content;
+// import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,11 +20,14 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.springframework.http.HttpStatus; // Import HttpStatus
 
 @RestController
 @RequestMapping("/auth")
@@ -62,7 +65,7 @@ public class LoginController {
         HttpServletResponse response) {
         try {
             // Rate limiting check (implement this later in A04)
-            String clientIp = SecurityUtil.getClientIpAddress(request);
+            // String clientIp = SecurityUtil.getClientIpAddress(request);
             
             String token = registrationService.authenticateCustomer(
                 loginRequest.getEmail(), 
@@ -92,13 +95,28 @@ public class LoginController {
                 "error", "Authentication failed"
             ));
             
-        } catch (Exception e) {
+        }catch (BadCredentialsException e) {
+            // ** MODIFIKASI UNTUK MAXIMUM LOGIN ATTEMP **
+            String errorMessage = e.getMessage();
+            HttpStatus status = HttpStatus.UNAUTHORIZED; // Default untuk kredensial salah
+
+            if (errorMessage.contains("terkunci") || errorMessage.contains("Too many failed attempts")) {
+                status = HttpStatus.TOO_MANY_REQUESTS; // Gunakan 429 untuk akun terkunci
+            }
+            return ResponseEntity.status(status).body(Map.of(
+                "success", false,
+                "error", errorMessage
+            ));
+            // ** END MODIFIKASI **
+        }  
+        catch (Exception e) {
             // Log security event (implement in A09)
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
                 "error", "Authentication failed"
             ));
         }
+        
     }
     
     /**
@@ -295,7 +313,7 @@ public class LoginController {
         customerData.put("email", customer.getEmail());
         customerData.put("nomorTelepon", customer.getNomorTelepon());
         customerData.put("tipeAkun", customer.getTipeAkun());
-        customerData.put("emailVerified", customer.getEmailVerified());
+        // customerData.put("emailVerified", customer.getEmailVerified());
         customerData.put("jenisKartu", customer.getJenisKartu() != null ? customer.getJenisKartu() : "Silver");
         
         // Only include address if present

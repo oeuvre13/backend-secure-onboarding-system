@@ -290,7 +290,7 @@ public class RegistrationController {
         customerData.put("agama", customer.getAgama());
         customerData.put("statusPernikahan", customer.getStatusPernikahan());
         customerData.put("pekerjaan", customer.getPekerjaan());
-        customerData.put("emailVerified", customer.getEmailVerified());
+        // customerData.put("emailVerified", customer.getEmailVerified());
         
         // Alamat info
         if (customer.getAlamat() != null) {
