@@ -8,11 +8,12 @@ Untuk pengujian local, pastikan terdapat file `.env` yang sejajar dengan `pom.xm
 DB_URL=jdbc:postgresql://localhost:5432/customer_registration
 DB_USERNAME=postgres
 DB_PASSWORD=password
-JWT_SECRET=90385881f4876e643cdf5fa2b28c1494469133ddf0e6aee2784eeab3f4f342e82b51ea0c
+JWT_SECRET=90385881f4876e643cdf5fa2b28c1494469133ddf0e6aee2784eeab3f4f342e82b51ea0cfsafasfalfsadffsafs
 JWT_EXPIRATION=86400000
-SERVER_PORT=8081
-DUKCAPIL_SERVICE_URL=http://dukcapil-dummy:8081
+SERVER_PORT=8080
 FIREBASE_CONFIG_PATH="model-parsec-465503-p3-firebase-adminsdk-fbsvc-1e9901efad.json"
+DUKCAPIL_SERVICE_URL=http://localhost:8081
+BACKEND_BASE_URL=http://localhost:8080
 ```
 
 simpan file private key (`.js`) di folder `/resources/` :

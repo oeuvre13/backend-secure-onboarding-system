@@ -21,7 +21,8 @@ public class DukcapilWebClient {
     @Value("${dukcapil.api.key}")
     private String apiKey;
 
-    public DukcapilWebClient(@Value("${dukcapil.service.url:http://localhost:8081}") String baseUrl) {
+    public DukcapilWebClient(@Value("${app.dukcapil.base-url:http://localhost:9999}") String baseUrl) {
+        // gunakan baseUrl dari konfigurasi, default ke localhost:9999 (untuk debugging)
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader("X-API-Key", apiKey)
