@@ -2,6 +2,9 @@ name: Trigger Jenkins Job
 
 on:
   push:
+    branches:
+      - main
+      - develop
     tags:
       - 'v1.0.0'  # Trigger on version tag push like v1.0.0
 
