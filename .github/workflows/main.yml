@@ -12,7 +12,7 @@ jobs:
     env:
       JENKINS_URL: https://jenkins.andrc1613.my.id
       JENKINS_USER: admin
-      JENKINS_API_TOKEN: testingtoken
+      JENKINS_API_TOKEN: 11e0e64549e63f4770429d8fff1bd13e74
       JOB_NAME: xmen-be-cicd
 
     steps:
