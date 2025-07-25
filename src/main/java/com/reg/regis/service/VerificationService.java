@@ -8,6 +8,10 @@ import com.reg.regis.dto.response.DukcapilResponseDto;
 import com.reg.regis.dto.response.VerificationResponse;
 import com.reg.regis.model.Customer;
 import com.reg.regis.repository.CustomerRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import org.hibernate.validator.constraints.pl.REGON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +21,17 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class VerificationService {
     
-    @Autowired
-    private CustomerRepository customerRepository;
+    // @Autowired
+    // private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
     
-    @Autowired
-    private DukcapilClientService dukcapilClientService;
-    
+    // @Autowired
+    // private DukcapilClientService dukcapilClientService;
+    private final DukcapilClientService dukcapilClientService;
+
     /**
      * Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service
      */
@@ -163,7 +170,7 @@ public class VerificationService {
         
         // Customer stats
         long totalCustomers = customerRepository.countTotalCustomers();
-        long verifiedCustomers = customerRepository.countVerifiedCustomers();
+        long verifiedCustomers = 0; //customerRepository.countVerifiedCustomers();
         double verificationRate = totalCustomers > 0 ? 
             (double) verifiedCustomers / totalCustomers * 100 : 0;
         

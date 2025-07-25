@@ -8,7 +8,7 @@ Untuk pengujian local, pastikan terdapat file `.env` yang sejajar dengan `pom.xm
 DB_URL=jdbc:postgresql://localhost:5432/customer_registration
 DB_USERNAME=postgres
 DB_PASSWORD=password
-JWT_SECRET=90385881f4876e643cdf5fa2b28c1494469133ddf0e6aee2784eeab3f4f342e82b51ea0c
+JWT_SECRET=a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456789012345678901234567890abcdef1234567890abcdef1234567890abcdef
 JWT_EXPIRATION=86400000
 SERVER_PORT=8081
 DUKCAPIL_SERVICE_URL=http://dukcapil-dummy:8081

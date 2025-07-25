@@ -8,6 +8,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.reg.regis.dto.response.DukcapilResponseDto;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -20,10 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class DukcapilClientService {
 
-    @Autowired
-    private RestTemplate restTemplate;
+    // @Autowired
+    // private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
     @Value("${app.dukcapil.base-url}")
     private String dukcapilBaseUrl;

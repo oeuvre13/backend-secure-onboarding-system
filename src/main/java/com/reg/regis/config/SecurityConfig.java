@@ -2,8 +2,12 @@ package com.reg.regis.config;
 
 import com.reg.regis.security.JwtAuthFilter;
 import com.reg.regis.service.CustomerUserDetailsService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,16 +31,19 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
 
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
+    // @Autowired
+    // private JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
 
-    @Autowired
-    private CustomerUserDetailsService userDetailsService;
+    // @Autowired
+    // private CustomerUserDetailsService userDetailsService;
+    private final CustomerUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

@@ -210,7 +210,7 @@ class VerificationServiceTest {
     void testGetVerificationStats() {
         // Given
         when(customerRepository.countTotalCustomers()).thenReturn(100L);
-        when(customerRepository.countVerifiedCustomers()).thenReturn(80L);
+        // when(customerRepository.countVerifiedCustomers()).thenReturn(80L);
         when(dukcapilClientService.isDukcapilServiceHealthy()).thenReturn(true);
         when(dukcapilClientService.getDukcapilBaseUrl()).thenReturn("http://localhost:8081/api/dukcapil");
 
