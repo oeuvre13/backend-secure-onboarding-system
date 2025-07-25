@@ -1,0 +1,19 @@
+name: Trigger Jenkins Job
+
+on:
+  push:
+    tags:
+      - 'v1.0.0'  # Trigger on version tag push like v1.0.0
+
+jobs:
+  trigger-jenkins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Jenkins with parameters
+        run: |
+          curl -X POST "$JENKINS_URL/job/$JOB_NAME/buildWithParameters?token=$JENKINS_API_TOKEN" \
+            --data-urlencode "TAG=${GITHUB_REF#refs/tags/}" 
+        env:
+          JENKINS_API_TOKEN: testingtoken
+          JENKINS_URL: https://jenkins.andrc1613.my.id
+          JOB_NAME: xmen-be-cicd
