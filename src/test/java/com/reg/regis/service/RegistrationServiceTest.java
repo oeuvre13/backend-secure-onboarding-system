@@ -2,165 +2,209 @@ package com.reg.regis.service;
 
 import com.reg.regis.dto.request.RegistrationRequest;
 import com.reg.regis.dto.response.DukcapilResponseDto;
+import com.reg.regis.dto.response.RegistrationResponse;
 import com.reg.regis.model.Customer;
+import com.reg.regis.model.Alamat;
 import com.reg.regis.repository.CustomerRepository;
 import com.reg.regis.security.JwtUtil;
-import com.reg.regis.test.factory.TestDataFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Optional;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
+
 @ExtendWith(MockitoExtension.class)
-public
 class RegistrationServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
-    
+
     @Mock
     private PasswordEncoder passwordEncoder;
-    
+
     @Mock
     private JwtUtil jwtUtil;
-    
+
     @Mock
     private DukcapilClientService dukcapilClientService;
-    
+
+    @Mock
+    private LoginAttemptService loginAttemptService;
+
     @InjectMocks
     private RegistrationService registrationService;
 
+    private RegistrationRequest registrationRequest;
+    private Customer customer;
+
+    @BeforeEach
+    void setUp() {
+        registrationRequest = new RegistrationRequest();
+        registrationRequest.setNik("1234567890123456");
+        registrationRequest.setNamaLengkap("John Doe");
+        registrationRequest.setEmail("john@example.com");
+        registrationRequest.setPassword("password123");
+        registrationRequest.setNomorTelepon("081234567890");
+        registrationRequest.setTanggalLahir(LocalDate.of(1990, 1, 1));
+        registrationRequest.setJenisKartu("Silver");
+
+        RegistrationRequest.AlamatRequest alamat = new RegistrationRequest.AlamatRequest();
+        alamat.setNamaAlamat("Jl. Test");
+        alamat.setProvinsi("DKI Jakarta");
+        alamat.setKota("Jakarta");
+        alamat.setKecamatan("Test");
+        alamat.setKelurahan("Test");
+        alamat.setKodePos("12345");
+        registrationRequest.setAlamat(alamat);
+
+        customer = new Customer();
+        customer.setId(1L);
+        customer.setEmail("john@example.com");
+        customer.setNamaLengkap("John Doe");
+        customer.setJenisKartu("Silver");
+        customer.setKodeRekening(12345678);
+        customer.setNomorKartuDebitVirtual("4101 2345 6789 0123");
+    }
+
     @Test
-    void testRegisterCustomer_DukcapilServiceDown() {
-        // Given
-        RegistrationRequest request = new RegistrationRequest();
-        request.setEmail("test@example.com");
-        
+    void testRegisterCustomer_Success() {
+        // Mock Dukcapil service
+        DukcapilResponseDto dukcapilResponse = new DukcapilResponseDto(true, "Valid");
+        Map<String, Object> ktpData = new HashMap<>();
+        ktpData.put("namaLengkap", "John Doe");
+        ktpData.put("tempatLahir", "Jakarta");
+        ktpData.put("tanggalLahir", "1990-01-01");
+        ktpData.put("jenisKelamin", "L");
+        ktpData.put("agama", "Islam");
+        dukcapilResponse.setData(ktpData);
+
+        when(dukcapilClientService.isDukcapilServiceHealthy()).thenReturn(true);
+        when(dukcapilClientService.verifyNikNameAndBirthDate(anyString(), anyString(), any()))
+            .thenReturn(dukcapilResponse);
+        when(customerRepository.existsByEmailIgnoreCase(anyString())).thenReturn(false);
+        when(customerRepository.existsByNomorTelepon(anyString())).thenReturn(false);
+        when(customerRepository.existsByNik(anyString())).thenReturn(false);
+        when(customerRepository.existsByKodeRekening(anyInt())).thenReturn(false);
+        when(customerRepository.existsByNomorKartuDebitVirtual(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+
+        RegistrationResponse response = registrationService.registerCustomer(registrationRequest);
+
+        assertNotNull(response);
+        assertEquals("Silver", response.getJenisKartu());
+        assertEquals("John Doe", response.getNamaLengkap());
+        verify(customerRepository).save(any(Customer.class));
+    }
+
+    @Test
+    void testRegisterCustomer_DukcapilServiceUnavailable() {
         when(dukcapilClientService.isDukcapilServiceHealthy()).thenReturn(false);
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, 
-            () -> registrationService.registerCustomer(request));
-        
-        assertEquals("Dukcapil service tidak tersedia. Silakan coba lagi nanti.", 
-            exception.getMessage());
-        
-        verify(customerRepository, never()).save(any());
+            () -> registrationService.registerCustomer(registrationRequest));
+
+        assertEquals("Dukcapil service tidak tersedia. Silakan coba lagi nanti.", exception.getMessage());
     }
-    
+
     @Test
-    void testRegisterCustomer_EmailAlreadyExists() {
-        // Given
-        RegistrationRequest request = new RegistrationRequest();
-        request.setEmail("john.doe@example.com");
-        request.setNik("3175031234567890");
-        request.setNamaLengkap("John Doe");
-        
+    void testRegisterCustomer_EmailExists() {
         when(dukcapilClientService.isDukcapilServiceHealthy()).thenReturn(true);
-        
-        DukcapilResponseDto mockResponse = new DukcapilResponseDto();
-        mockResponse.setValid(true);
-        mockResponse.setMessage("Data valid");
-        mockResponse.setData(new HashMap<>());
-        
+        DukcapilResponseDto dukcapilResponse = new DukcapilResponseDto(true, "Valid");
         when(dukcapilClientService.verifyNikNameAndBirthDate(anyString(), anyString(), any()))
-            .thenReturn(mockResponse);
-        
-        when(customerRepository.existsByEmailIgnoreCase("john.doe@example.com")).thenReturn(true);
+            .thenReturn(dukcapilResponse);
+        when(customerRepository.existsByEmailIgnoreCase(anyString())).thenReturn(true);
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, 
-            () -> registrationService.registerCustomer(request));
-        
-        assertTrue(exception.getMessage().contains("Email john.doe@example.com sudah terdaftar"));
-        verify(customerRepository, never()).save(any());
-    }
-    
-    @Test
-    void testValidateNikFormat_ValidNik() {
-        // Given
-        String validNik = "3175031234567890";
+            () -> registrationService.registerCustomer(registrationRequest));
 
-        // When
-        boolean result = registrationService.validateNikFormat(validNik);
+        assertTrue(exception.getMessage().contains("Email") && exception.getMessage().contains("sudah terdaftar"));
+    }
 
-        // Then
-        assertTrue(result);
-    }
-    
-    @Test
-    void testValidateNikFormat_InvalidNik() {
-        // When & Then
-        assertFalse(registrationService.validateNikFormat("123")); // Too short
-        assertFalse(registrationService.validateNikFormat("1234567890123456a")); // Contains letter
-        assertFalse(registrationService.validateNikFormat(null)); // Null
-    }
-    
-    @Test
-    void testCheckPasswordStrength() {
-        // When & Then
-        assertEquals("lemah", registrationService.checkPasswordStrength("123"));
-        assertEquals("sedang", registrationService.checkPasswordStrength("Password123"));
-        assertEquals("kuat", registrationService.checkPasswordStrength("Password123!"));
-    }
-    
     @Test
     void testAuthenticateCustomer_Success() {
-        // Given
-        Customer customer = TestDataFactory.createJohnDoe();
-        customer.setEmail("john.doe@example.com");
-        customer.setPassword("encoded_password");
-        
-        when(customerRepository.findByEmailIgnoreCase("john.doe@example.com"))
+        when(customerRepository.findByEmailIgnoreCase("john@example.com"))
             .thenReturn(Optional.of(customer));
-        when(passwordEncoder.matches("JohnDoe123!", "encoded_password")).thenReturn(true);
-        when(jwtUtil.generateToken("john.doe@example.com")).thenReturn("jwt_token");
+        when(passwordEncoder.matches("password123", customer.getPassword())).thenReturn(true);
+        when(jwtUtil.generateToken("john@example.com")).thenReturn("jwt-token");
 
-        // When
-        String token = registrationService.authenticateCustomer("john.doe@example.com", "JohnDoe123!");
+        String token = registrationService.authenticateCustomer("john@example.com", "password123");
 
-        // Then
-        assertEquals("jwt_token", token);
+        assertEquals("jwt-token", token);
+        verify(customerRepository).save(customer); // Reset failed attempts
     }
-    
+
     @Test
     void testAuthenticateCustomer_WrongPassword() {
-        // Given
-        Customer customer = TestDataFactory.createJohnDoe();
-        customer.setEmail("john.doe@example.com");
-        customer.setPassword("encoded_password");
-        
-        when(customerRepository.findByEmailIgnoreCase("john.doe@example.com"))
+        when(customerRepository.findByEmailIgnoreCase("john@example.com"))
             .thenReturn(Optional.of(customer));
-        when(passwordEncoder.matches("wrongpassword", "encoded_password")).thenReturn(false);
+        when(passwordEncoder.matches("wrongpassword", customer.getPassword())).thenReturn(false);
+        when(loginAttemptService.recordFailedLoginAttempt("john@example.com")).thenReturn(customer);
+        when(loginAttemptService.getMaxLoginAttempts()).thenReturn(5);
 
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, 
-            () -> registrationService.authenticateCustomer("john.doe@example.com", "wrongpassword"));
-        
-        assertEquals("Email atau password salah", exception.getMessage());
+        assertThrows(BadCredentialsException.class, 
+            () -> registrationService.authenticateCustomer("john@example.com", "wrongpassword"));
+
+        verify(loginAttemptService).recordFailedLoginAttempt("john@example.com");
     }
-    
+
+    @Test
+    void testAuthenticateCustomer_UserNotFound() {
+        when(customerRepository.findByEmailIgnoreCase("notfound@example.com"))
+            .thenReturn(Optional.empty());
+
+        assertThrows(BadCredentialsException.class, 
+            () -> registrationService.authenticateCustomer("notfound@example.com", "password"));
+    }
+
+    @Test
+    void testValidateNikFormat_Valid() {
+        assertTrue(registrationService.validateNikFormat("3201234567890123"));
+    }
+
+    @Test
+    void testValidateNikFormat_Invalid() {
+        assertFalse(registrationService.validateNikFormat("123"));
+        assertFalse(registrationService.validateNikFormat("abcd567890123456"));
+        assertFalse(registrationService.validateNikFormat(null));
+    }
+
+    @Test
+    void testCheckPasswordStrength() {
+        assertEquals("lemah", registrationService.checkPasswordStrength("123"));
+        assertEquals("sedang", registrationService.checkPasswordStrength("Password123"));
+        assertEquals("kuat", registrationService.checkPasswordStrength("Password123@"));
+    }
+
     @Test
     void testGetCustomerByEmail() {
-        // Given
-        Customer customer = TestDataFactory.createJohnDoe();
-        when(customerRepository.findByEmailIgnoreCase("john.doe@example.com"))
+        when(customerRepository.findByEmailIgnoreCase("john@example.com"))
             .thenReturn(Optional.of(customer));
 
-        // When
-        Optional<Customer> result = registrationService.getCustomerByEmail("john.doe@example.com");
+        Optional<Customer> result = registrationService.getCustomerByEmail("john@example.com");
 
-        // Then
         assertTrue(result.isPresent());
-        assertEquals("John Doe", result.get().getNamaLengkap());
+        assertEquals("john@example.com", result.get().getEmail());
+    }
+
+    @Test
+    void testValidateToken() {
+        when(jwtUtil.validateToken("valid-token")).thenReturn(true);
+        when(jwtUtil.validateToken("invalid-token")).thenReturn(false);
+
+        assertTrue(registrationService.validateToken("valid-token"));
+        assertFalse(registrationService.validateToken("invalid-token"));
     }
 }
