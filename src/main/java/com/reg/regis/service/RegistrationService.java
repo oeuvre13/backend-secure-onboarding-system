@@ -8,6 +8,9 @@ import com.reg.regis.model.Alamat;
 import com.reg.regis.model.Wali;
 import com.reg.regis.repository.CustomerRepository;
 import com.reg.regis.security.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +24,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class RegistrationService {
     
     // Hapus konstanta terkait login attempts, mereka sekarang di LoginAttemptService
@@ -32,22 +36,27 @@ public class RegistrationService {
     // private RegistrationService self;
     
     // START MODIFIKASI: Injeksi LoginAttemptService yang baru
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    // @Autowired
+    // private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
     // END MODIFIKASI
 
-    @Autowired
-    private CustomerRepository customerRepository;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private JwtUtil jwtUtil;
-    
-    @Autowired
-    private DukcapilClientService dukcapilClientService;
-    
+    // @Autowired
+    // private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
+
+    // @Autowired
+    // private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
+    // @Autowired
+    // private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
+
+    // @Autowired
+    // private DukcapilClientService dukcapilClientService;
+    private final DukcapilClientService dukcapilClientService;
+
     // Static random untuk thread safety
     private static final SecureRandom RANDOM = new SecureRandom();
     
@@ -456,7 +465,7 @@ public class RegistrationService {
     
     public RegistrationStats getRegistrationStats() {
         long totalCustomers = customerRepository.countTotalCustomers();
-        long verifiedCustomers = customerRepository.countVerifiedCustomers();
+        long verifiedCustomers = 0; //customerRepository.countVerifiedCustomers();
         double verificationRate = totalCustomers > 0 ? 
             (double) verifiedCustomers / totalCustomers * 100 : 0;
         boolean dukcapilAvailable = dukcapilClientService.isDukcapilServiceHealthy();

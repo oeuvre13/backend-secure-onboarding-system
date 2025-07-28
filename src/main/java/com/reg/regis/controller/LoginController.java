@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -34,11 +36,13 @@ import org.springframework.http.HttpStatus; // Import HttpStatus
 @Tag(name = "Authentication API", description = "API untuk login, logout, dan manajemen session")
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 @Validated
+@RequiredArgsConstructor
 public class LoginController {
     
-    @Autowired
-    private RegistrationService registrationService;
-    
+    // @Autowired
+    // private RegistrationService registrationService;
+    private final RegistrationService registrationService;
+
     @Value("${app.security.cookie.secure:false}")
     private boolean cookieSecure;
     

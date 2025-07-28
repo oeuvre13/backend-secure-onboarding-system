@@ -2,6 +2,9 @@ package com.reg.regis.service;
 
 import com.reg.regis.model.Customer;
 import com.reg.regis.repository.CustomerRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -12,13 +15,15 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class LoginAttemptService {
 
     private static final int MAX_LOGIN_ATTEMPTS = 5;
     private static final long LOCKOUT_DURATION_MINUTES = 1; // Durasi penguncian
 
-    @Autowired
-    private CustomerRepository customerRepository;
+    // @Autowired
+    // private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Customer recordFailedLoginAttempt(String email) {

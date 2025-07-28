@@ -6,6 +6,8 @@ import com.reg.regis.dto.request.PhoneVerificationRequest;
 import com.reg.regis.dto.response.VerificationResponse;
 import com.reg.regis.service.VerificationService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +17,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/verification")
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
+@RequiredArgsConstructor
 public class VerificationController {
     
-    @Autowired
-    private VerificationService verificationService;
+    // @Autowired
+    // private VerificationService verificationService;
+    private final VerificationService verificationService;
     
     /**
      * Verifikasi NIK dengan nama lengkap dan tanggal lahir via Dukcapil Service

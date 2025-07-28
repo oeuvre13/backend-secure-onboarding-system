@@ -1,6 +1,6 @@
 -- ===== UPDATED DATABASE SETUP SCRIPT =====
 -- File: database_setup_for_login_attempts.sql
--- Jalankan dengan: psql postgres -f sql/database_setup_for_login_attempts.sql
+-- Jalankan dengan: psql -U postgres -f sql/database_setup_FIXED.sql
 
 -- 1. Pastikan fungsi update_updated_at_column ada (jika belum ada di database postgres)
 -- Jika fungsi ini sudah ada di instance PostgreSQL Anda, bagian ini bisa dilewati.
@@ -8,7 +8,8 @@
 
 -- 2. Create Database untuk Customer Registration
 DROP DATABASE IF EXISTS customer_registration;
-CREATE DATABASE customer_registration WITH OWNER = postgres;
+CREATE DATABASE customer_registration;
+-- CREATE DATABASE customer_registration WITH OWNER = postgres;
 
 -- 3. Setup Customer Registration Database
 \c customer_registration;
