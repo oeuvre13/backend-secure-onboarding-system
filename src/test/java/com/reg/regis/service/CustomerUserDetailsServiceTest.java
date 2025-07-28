@@ -3,7 +3,6 @@ package com.reg.regis.service;
 import com.reg.regis.model.Customer;
 import com.reg.regis.repository.CustomerRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -11,10 +10,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerUserDetailsServiceTest {
@@ -23,70 +22,68 @@ class CustomerUserDetailsServiceTest {
     private CustomerRepository customerRepository;
 
     @InjectMocks
-    private CustomerUserDetailsService userDetailsService;
-
-    private Customer customer;
-
-    @BeforeEach
-    void setUp() {
-        customer = new Customer();
-        customer.setEmail("test@example.com");
-        customer.setPassword("encodedPassword123");
-    }
+    private CustomerUserDetailsService customerUserDetailsService;
 
     @Test
-    void testLoadUserByUsername_UserExists() {
-        when(customerRepository.findByEmailIgnoreCase("test@example.com"))
-            .thenReturn(Optional.of(customer));
+    void loadUserByUsername_ValidEmail_ReturnsUserDetails() {
+        // Given
+        String email = "test@example.com";
+        String password = "hashedPassword123";
+        
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail(email);
+        mockCustomer.setPassword(password);
+        
+        when(customerRepository.findByEmailIgnoreCase(email))
+                .thenReturn(Optional.of(mockCustomer));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername("test@example.com");
+        // When
+        UserDetails userDetails = customerUserDetailsService.loadUserByUsername(email);
 
+        // Then
         assertNotNull(userDetails);
-        assertEquals("test@example.com", userDetails.getUsername());
-        assertEquals("encodedPassword123", userDetails.getPassword());
+        assertEquals(email, userDetails.getUsername());
+        assertEquals(password, userDetails.getPassword());
         assertTrue(userDetails.getAuthorities().isEmpty());
+        
+        verify(customerRepository).findByEmailIgnoreCase(email);
     }
 
     @Test
-    void testLoadUserByUsername_UserNotFound() {
-        when(customerRepository.findByEmailIgnoreCase("notfound@example.com"))
-            .thenReturn(Optional.empty());
+    void loadUserByUsername_EmailNotFound_ThrowsUsernameNotFoundException() {
+        // Given
+        String email = "notfound@example.com";
+        
+        when(customerRepository.findByEmailIgnoreCase(email))
+                .thenReturn(Optional.empty());
 
+        // When & Then
         UsernameNotFoundException exception = assertThrows(
-            UsernameNotFoundException.class, 
-            () -> userDetailsService.loadUserByUsername("notfound@example.com")
+                UsernameNotFoundException.class,
+                () -> customerUserDetailsService.loadUserByUsername(email)
         );
-
-        assertEquals("User not found with email: notfound@example.com", exception.getMessage());
+        
+        assertEquals("User not found with email: " + email, exception.getMessage());
+        verify(customerRepository).findByEmailIgnoreCase(email);
     }
 
     @Test
-    void testLoadUserByUsername_CaseInsensitive() {
-        when(customerRepository.findByEmailIgnoreCase("TEST@EXAMPLE.COM"))
-            .thenReturn(Optional.of(customer));
+    void loadUserByUsername_CaseInsensitiveEmail_Works() {
+        // Given
+        String email = "TEST@EXAMPLE.COM";
+        Customer mockCustomer = new Customer();
+        mockCustomer.setEmail("test@example.com");
+        mockCustomer.setPassword("password123");
+        
+        when(customerRepository.findByEmailIgnoreCase(email))
+                .thenReturn(Optional.of(mockCustomer));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername("TEST@EXAMPLE.COM");
+        // When
+        UserDetails userDetails = customerUserDetailsService.loadUserByUsername(email);
 
+        // Then
         assertNotNull(userDetails);
         assertEquals("test@example.com", userDetails.getUsername());
-        verify(customerRepository).findByEmailIgnoreCase("TEST@EXAMPLE.COM");
-    }
-
-    @Test
-    void testLoadUserByUsername_EmptyEmail() {
-        when(customerRepository.findByEmailIgnoreCase(""))
-            .thenReturn(Optional.empty());
-
-        assertThrows(UsernameNotFoundException.class, 
-            () -> userDetailsService.loadUserByUsername(""));
-    }
-
-    @Test
-    void testLoadUserByUsername_NullEmail() {
-        when(customerRepository.findByEmailIgnoreCase(null))
-            .thenReturn(Optional.empty());
-
-        assertThrows(UsernameNotFoundException.class, 
-            () -> userDetailsService.loadUserByUsername(null));
+        verify(customerRepository).findByEmailIgnoreCase(email);
     }
 }

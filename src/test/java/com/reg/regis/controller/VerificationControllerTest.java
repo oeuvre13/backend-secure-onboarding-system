@@ -149,4 +149,112 @@ class VerificationControllerTest {
         assertNotNull(body.get("service"));
         assertNotNull(body.get("endpoints"));
     }
+
+    @Test
+    void testVerifyNik_Exception() {
+        when(verificationService.verifyNik(any(NikVerificationRequest.class)))
+            .thenThrow(new RuntimeException("Service error"));
+
+        ResponseEntity<?> result = verificationController.verifyNik(nikRequest);
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertFalse((Boolean) body.get("valid"));
+        assertTrue(((String) body.get("message")).contains("Service error"));
+    }
+
+    @Test
+    void testVerifyEmail_Exception() {
+        when(verificationService.verifyEmail(any(EmailVerificationRequest.class)))
+            .thenThrow(new RuntimeException("Email service error"));
+
+        ResponseEntity<?> result = verificationController.verifyEmail(emailRequest);
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertFalse((Boolean) body.get("available"));
+        assertTrue(((String) body.get("message")).contains("Email service error"));
+    }
+
+    @Test
+    void testVerifyPhone_Exception() {
+        when(verificationService.verifyPhone(any(PhoneVerificationRequest.class)))
+            .thenThrow(new RuntimeException("Phone service error"));
+
+        ResponseEntity<?> result = verificationController.verifyPhone(phoneRequest);
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertFalse((Boolean) body.get("available"));
+        assertTrue(((String) body.get("message")).contains("Phone service error"));
+    }
+
+    @Test
+    void testCheckNik_NullNik() {
+        Map<String, String> request = Map.of();
+
+        ResponseEntity<?> result = verificationController.checkNik(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertFalse((Boolean) body.get("registered"));
+        assertEquals("NIK harus 16 digit", body.get("message"));
+    }
+
+    @Test
+    void testCheckNik_ServiceException() {
+        when(verificationService.isNikRegistered("1234567890123456"))
+            .thenThrow(new RuntimeException("Database error"));
+
+        Map<String, String> request = Map.of("nik", "1234567890123456");
+        ResponseEntity<?> result = verificationController.checkNik(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertFalse((Boolean) body.get("registered"));
+        assertTrue(((String) body.get("message")).contains("Database error"));
+    }
+
+    @Test
+    void testGetVerificationStats_Exception() {
+        when(verificationService.getVerificationStats())
+            .thenThrow(new RuntimeException("Stats error"));
+
+        ResponseEntity<?> result = verificationController.getVerificationStats();
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertTrue(((String) body.get("error")).contains("Stats error"));
+    }
+
+    @Test
+    void testVerifyNik_WithData() {
+        Map<String, Object> responseData = Map.of("additionalInfo", "test");
+        VerificationResponse response = new VerificationResponse(true, "NIK valid", responseData);
+        
+        when(verificationService.verifyNik(any(NikVerificationRequest.class))).thenReturn(response);
+
+        ResponseEntity<?> result = verificationController.verifyNik(nikRequest);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertTrue((Boolean) body.get("valid"));
+        assertNotNull(body.get("data"));
+        Map<String, Object> data = (Map<String, Object>) body.get("data");
+        assertEquals("test", data.get("additionalInfo"));
+    }
+
+    @Test
+    void testVerifyEmail_WithNullData() {
+        VerificationResponse response = new VerificationResponse(true, "Email tersedia", null);
+        when(verificationService.verifyEmail(any(EmailVerificationRequest.class))).thenReturn(response);
+
+        ResponseEntity<?> result = verificationController.verifyEmail(emailRequest);
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        assertTrue((Boolean) body.get("available"));
+        assertNotNull(body.get("data"));
+        assertTrue(((Map<String, Object>) body.get("data")).isEmpty());
+    }
 }
