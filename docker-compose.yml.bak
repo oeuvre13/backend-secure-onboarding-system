@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: customer_registration
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Chiteki1116!
+      POSTGRES_PASSWORD: 
     ports:
       - "5432:5432"
     volumes:
@@ -26,7 +26,7 @@ services:
     environment:
       POSTGRES_DB: dukcapil_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Chiteki1116!
+      POSTGRES_PASSWORD: 
     ports:
       - "5433:5432"  # Different port untuk avoid conflict
     volumes:
@@ -46,7 +46,7 @@ services:
       # Primary Database
       DB_URL: jdbc:postgresql://postgres-customer:5432/customer_registration
       DB_USERNAME: postgres
-      DB_PASSWORD: Chiteki1116!
+      DB_PASSWORD: 
       
       # Dukcapil Database  
       DUKCAPIL_DB_URL: jdbc:postgresql://postgres-dukcapil:5432/dukcapil_db
