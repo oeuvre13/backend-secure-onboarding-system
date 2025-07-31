@@ -79,4 +79,120 @@ class CustomerTest {
         assertEquals(alamat, customer.getAlamat());
         assertEquals(wali, customer.getWali());
     }
+
+    @Test
+    void testGetNamaIbuKandung() {
+        // Test getter method
+        customer.setNamaIbuKandung("Siti Nurhaliza");
+        assertEquals("Siti Nurhaliza", customer.getNamaIbuKandung());
+    }
+
+    @Test
+    void testSetNamaIbuKandung() {
+        // Test setter method
+        String namaIbu = "Dewi Sartika";
+        customer.setNamaIbuKandung(namaIbu);
+        assertEquals(namaIbu, customer.getNamaIbuKandung());
+    }
+
+    @Test
+    void testNamaIbuKandungNull() {
+        // Test dengan nilai null
+        customer.setNamaIbuKandung(null);
+        assertNull(customer.getNamaIbuKandung());
+    }
+
+    @Test
+    void testNamaIbuKandungEmpty() {
+        // Test dengan string kosong
+        customer.setNamaIbuKandung("");
+        assertEquals("", customer.getNamaIbuKandung());
+    }
+
+    @Test
+    void testGetSumberPenghasilanMethod() {
+        customer.setSumberPenghasilan("Gaji Pokok");
+        assertEquals("Gaji Pokok", customer.getSumberPenghasilan());
+    }
+
+    @Test
+    void testGetRentangGajiMethod() {
+        customer.setRentangGaji("5-10 juta");
+        assertEquals("5-10 juta", customer.getRentangGaji());
+    }
+
+    @Test
+    void testGetTujuanPembuatanRekeningMethod() {
+        customer.setTujuanPembuatanRekening("Menabung");
+        assertEquals("Menabung", customer.getTujuanPembuatanRekening());
+    }
+
+    @Test
+    void testSetUpdatedAtMethod() {
+        LocalDateTime waktu = LocalDateTime.now();
+        customer.setUpdatedAt(waktu);
+        assertEquals(waktu, customer.getUpdatedAt());
+    }
+
+    @Test
+    void testSumberPenghasilanNull() {
+        customer.setSumberPenghasilan(null);
+        assertNull(customer.getSumberPenghasilan());
+    }
+
+    @Test
+    void testRentangGajiEmpty() {
+        customer.setRentangGaji("");
+        assertEquals("", customer.getRentangGaji());
+    }
+
+    @Test
+    void testTujuanPembuatanRekeningSpaces() {
+        customer.setTujuanPembuatanRekening("  Investasi  ");
+        assertEquals("  Investasi  ", customer.getTujuanPembuatanRekening());
+    }
+
+    @Test
+    void testPrePersist_JenisKartuNull() {
+        // Test ketika jenisKartu null
+        customer.setJenisKartu(null);
+        customer.prePersist();
+        
+        assertNotNull(customer.getCreatedAt());
+        assertNotNull(customer.getUpdatedAt());
+        assertEquals("Silver", customer.getJenisKartu());
+    }
+
+    @Test
+    void testPrePersist_JenisKartuEmpty() {
+        // Test ketika jenisKartu empty string
+        customer.setJenisKartu("");
+        customer.prePersist();
+        
+        assertNotNull(customer.getCreatedAt());
+        assertNotNull(customer.getUpdatedAt());
+        assertEquals("Silver", customer.getJenisKartu());
+    }
+
+    @Test
+    void testPrePersist_JenisKartuAlreadySet() {
+        // Test ketika jenisKartu sudah ada nilai
+        customer.setJenisKartu("Gold");
+        customer.prePersist();
+        
+        assertNotNull(customer.getCreatedAt());
+        assertNotNull(customer.getUpdatedAt());
+        assertEquals("Gold", customer.getJenisKartu()); // Tidak berubah
+    }
+
+    @Test
+    void testPrePersist_JenisKartuWhitespace() {
+        // Test ketika jenisKartu hanya whitespace
+        customer.setJenisKartu("   ");
+        customer.prePersist();
+        
+        assertNotNull(customer.getCreatedAt());
+        assertNotNull(customer.getUpdatedAt());
+        assertEquals("   ", customer.getJenisKartu()); // Whitespace tidak dianggap empty
+    }
 }

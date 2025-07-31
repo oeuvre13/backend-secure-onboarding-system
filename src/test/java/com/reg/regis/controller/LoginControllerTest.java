@@ -23,6 +23,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import jakarta.servlet.http.Cookie;
+
 @ExtendWith(MockitoExtension.class)
 class LoginControllerTest {
 
@@ -653,5 +655,416 @@ class LoginControllerTest {
 
         // Then
         assertEquals(cookieToken, result);
+    }
+
+    // Tambahkan import ini di bagian atas file:
+    // import jakarta.servlet.http.Cookie;
+
+    @Test
+    void testCreateSecureAuthCookie_WithDomain() {
+        // Given
+        ReflectionTestUtils.setField(loginController, "cookieDomain", "example.com");
+        String name = "authToken";
+        String value = "token123";
+
+        // When - using reflection to call private method
+        Cookie result = (Cookie) ReflectionTestUtils.invokeMethod(
+            loginController, "createSecureAuthCookie", name, value);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(name, result.getName());
+        assertEquals(value, result.getValue());
+        assertTrue(result.isHttpOnly());
+        assertEquals("example.com", result.getDomain());
+        assertEquals("/", result.getPath());
+        assertEquals(24 * 60 * 60, result.getMaxAge()); // 24 hours
+    }
+
+    @Test
+    void testCreateSecureAuthCookie_WithoutDomain() {
+        // Given - cookieDomain is empty (already set in setUp)
+        String name = "authToken";
+        String value = "token123";
+
+        // When
+        Cookie result = (Cookie) ReflectionTestUtils.invokeMethod(
+            loginController, "createSecureAuthCookie", name, value);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(name, result.getName());
+        assertEquals(value, result.getValue());
+        assertTrue(result.isHttpOnly());
+        assertNull(result.getDomain()); // Domain not set
+        assertEquals("/", result.getPath());
+        assertEquals(24 * 60 * 60, result.getMaxAge());
+    }
+
+    @Test
+    void testCreateSecureAuthCookie_NullDomain() {
+        // Given
+        ReflectionTestUtils.setField(loginController, "cookieDomain", null);
+        String name = "authToken";
+        String value = "token123";
+
+        // When
+        Cookie result = (Cookie) ReflectionTestUtils.invokeMethod(
+            loginController, "createSecureAuthCookie", name, value);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(name, result.getName());
+        assertEquals(value, result.getValue());
+        assertTrue(result.isHttpOnly());
+        assertNull(result.getDomain()); // Domain not set when null
+    }
+
+    @Test
+    void testCreateSecureAuthCookie_EmptyDomain() {
+        // Given
+        ReflectionTestUtils.setField(loginController, "cookieDomain", "");
+        String name = "authToken";
+        String value = "token123";
+
+        // When
+        Cookie result = (Cookie) ReflectionTestUtils.invokeMethod(
+            loginController, "createSecureAuthCookie", name, value);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(name, result.getName());
+        assertEquals(value, result.getValue());
+        assertTrue(result.isHttpOnly());
+        assertNull(result.getDomain()); // Domain not set when empty
+    }
+
+    @Test
+    void testRefreshToken_TokenNullOrEmpty_Null() {
+        // Given - token is null
+        String token = null;
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.refreshToken(token, null, response);
+
+        // Then
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertEquals("Token required", body.get("error"));
+    }
+
+    @Test
+    void testRefreshToken_TokenNullOrEmpty_Empty() {
+        // Given - token is empty
+        String token = "";
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.refreshToken(token, null, response);
+
+        // Then
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertEquals("Token required", body.get("error"));
+    }
+
+    @Test
+    void testRefreshToken_EmailNull() {
+        // Given
+        String token = "valid-token";
+        
+        // Mock getEmailFromToken to return null
+        when(registrationService.getEmailFromToken(token)).thenReturn(null);
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.refreshToken(token, null, response);
+
+        // Then
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertEquals("Invalid token", body.get("error"));
+    }
+
+    @Test
+    void testRefreshToken_SuccessPath() {
+        // Given
+        String oldToken = "old-token";
+        String newToken = "new-token";
+        String email = "test@example.com";
+
+        when(registrationService.getEmailFromToken(oldToken)).thenReturn(email);
+        when(registrationService.generateTokenForEmail(email)).thenReturn(newToken);
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.refreshToken(oldToken, null, response);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertTrue((Boolean) body.get("success"));
+        assertEquals("Token refreshed", body.get("message"));
+        assertEquals(newToken, body.get("token"));
+        
+        // Verify cookie was set
+        verify(response).addCookie(any(Cookie.class));
+    }
+
+    @Test
+    void testRefreshToken_ExceptionHandling() {
+        // Given
+        String token = "valid-token";
+        
+        // Mock to throw exception
+        when(registrationService.getEmailFromToken(token))
+            .thenThrow(new RuntimeException("Service error"));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.refreshToken(token, null, response);
+
+        // Then
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertEquals("Token refresh failed", body.get("error"));
+    }
+
+    @Test
+    void testCheckAuthentication_TokenNullOrEmpty_Null() {
+        // Given - token is null (extractToken returns null)
+        
+        // When
+        ResponseEntity<?> responseEntity = loginController.checkAuthentication(null, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("authenticated"));
+    }
+
+    @Test
+    void testCheckAuthentication_TokenNullOrEmpty_Empty() {
+        // Given - token is empty string
+        
+        // When
+        ResponseEntity<?> responseEntity = loginController.checkAuthentication("", null);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("authenticated"));
+    }
+
+    @Test
+    void testCheckAuthentication_EmailNotNullAndCustomerExists() {
+        // Given
+        String token = "valid-token";
+        String email = "test@example.com";
+        Customer customer = new Customer();
+        customer.setEmail(email);
+
+        when(registrationService.getEmailFromToken(token)).thenReturn(email);
+        when(registrationService.getCustomerByEmail(email)).thenReturn(Optional.of(customer));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.checkAuthentication(token, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertTrue((Boolean) body.get("authenticated"));
+        assertEquals(email, body.get("email"));
+    }
+
+    @Test
+    void testCheckAuthentication_EmailNullOrCustomerNotExists_EmailNull() {
+        // Given
+        String token = "invalid-token";
+
+        when(registrationService.getEmailFromToken(token)).thenReturn(null);
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.checkAuthentication(token, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("authenticated"));
+    }
+
+    @Test
+    void testCheckAuthentication_EmailNullOrCustomerNotExists_CustomerNotFound() {
+        // Given
+        String token = "valid-token";
+        String email = "test@example.com";
+
+        when(registrationService.getEmailFromToken(token)).thenReturn(email);
+        when(registrationService.getCustomerByEmail(email)).thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.checkAuthentication(token, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("authenticated"));
+    }
+
+    @Test
+    void testCheckAuthentication_ExceptionHandling() {
+        // Given
+        String token = "valid-token";
+
+        when(registrationService.getEmailFromToken(token))
+            .thenThrow(new RuntimeException("Service error"));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.checkAuthentication(token, null);
+
+        // Then
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("authenticated"));
+    }
+
+    @Test
+    void testLoginCustomer_BadCredentials_WithTerkunci() {
+        // Given
+        LoginController.LoginRequest loginRequest = new LoginController.LoginRequest();
+        loginRequest.setEmail("test@example.com");
+        loginRequest.setPassword("wrongpassword");
+
+        // Mock BadCredentialsException dengan message yang mengandung "terkunci"
+        when(registrationService.authenticateCustomer(anyString(), anyString()))
+            .thenThrow(new BadCredentialsException("Akun terkunci karena terlalu banyak percobaan login"));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.loginCustomer(loginRequest, request, response);
+
+        // Then
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Akun terkunci karena terlalu banyak percobaan login", body.get("error"));
+    }
+
+    @Test
+    void testLoginCustomer_BadCredentials_WithTooManyFailedAttempts() {
+        // Given
+        LoginController.LoginRequest loginRequest = new LoginController.LoginRequest();
+        loginRequest.setEmail("test@example.com");
+        loginRequest.setPassword("wrongpassword");
+
+        // Mock BadCredentialsException dengan message yang mengandung "Too many failed attempts"
+        when(registrationService.authenticateCustomer(anyString(), anyString()))
+            .thenThrow(new BadCredentialsException("Too many failed attempts"));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.loginCustomer(loginRequest, request, response);
+
+        // Then
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Too many failed attempts", body.get("error"));
+    }
+
+    @Test
+    void testLoginCustomer_BadCredentials_WithoutSpecialMessage() {
+        // Given
+        LoginController.LoginRequest loginRequest = new LoginController.LoginRequest();
+        loginRequest.setEmail("test@example.com");
+        loginRequest.setPassword("wrongpassword");
+
+        // Mock BadCredentialsException dengan message biasa (tidak mengandung "terkunci" atau "Too many failed attempts")
+        when(registrationService.authenticateCustomer(anyString(), anyString()))
+            .thenThrow(new BadCredentialsException("Invalid email or password"));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.loginCustomer(loginRequest, request, response);
+
+        // Then
+        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Invalid email or password", body.get("error"));
+    }
+
+    @Test
+    void testLoginCustomer_GeneralException_DatabaseError() {
+        // Given
+        LoginController.LoginRequest loginRequest = new LoginController.LoginRequest();
+        loginRequest.setEmail("test@example.com");
+        loginRequest.setPassword("password");
+
+        // Mock general Exception (bukan BadCredentialsException)
+        when(registrationService.authenticateCustomer(anyString(), anyString()))
+            .thenThrow(new RuntimeException("Database connection error"));
+
+        // When
+        ResponseEntity<?> responseEntity = loginController.loginCustomer(loginRequest, request, response);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) responseEntity.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertEquals("Authentication failed", body.get("error"));
     }
 }

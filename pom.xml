@@ -23,8 +23,8 @@
 		<reactor-bom.version>2024.0.8</reactor-bom.version>
 
 		<!-- SonarQube exclusions -->
-		<sonar.exclusions>**/security/**,**/config/**,**/client/**,**/RegistrationAbsoluteApplication.java,**/OtpController.java</sonar.exclusions>
-		<sonar.coverage.exclusions>**/security/**,**/config/**,**/client/**,**/RegistrationAbsoluteApplication.java,**/OtpController.java</sonar.coverage.exclusions>
+		<sonar.exclusions>**/config/**,**/client/**,**/RegistrationAbsoluteApplication.java,**/OtpController.java</sonar.exclusions>
+		<sonar.coverage.exclusions>**/config/**,**/client/**,**/RegistrationAbsoluteApplication.java,**/OtpController.java</sonar.coverage.exclusions>
 		<nvd.api.key>6729db3f-5e0c-4892-b196-a8c31df23c29</nvd.api.key>
 	</properties>
 	
@@ -227,7 +227,6 @@
 				<configuration>
 					<excludes>
 						<!-- Pattern harus sesuai dengan Java class, bukan file -->
-						<exclude>**/security/**</exclude>
 						<exclude>**/config/**</exclude>
 						<exclude>**/client/**</exclude>
 						<exclude>**/RegistrationAbsoluteApplication.class</exclude>
