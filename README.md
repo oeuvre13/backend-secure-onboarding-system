@@ -10,9 +10,11 @@ DB_USERNAME=postgres
 DB_PASSWORD=password
 JWT_SECRET=a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456789012345678901234567890abcdef1234567890abcdef1234567890abcdef
 JWT_EXPIRATION=86400000
-SERVER_PORT=8081
-DUKCAPIL_SERVICE_URL=http://dukcapil-dummy:8081
+SERVER_PORT=8080
 FIREBASE_CONFIG_PATH="model-parsec-465503-p3-firebase-adminsdk-fbsvc-1e9901efad.json"
+DUKCAPIL_SERVICE_URL=http://localhost:8081
+DUKCAPIL_API_KEY=dukcapil-secret-key-123
+APP_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://wondrdesktop.andrc1613.my.id
 ```
 
 simpan file private key (`.js`) di folder `/resources/` :
