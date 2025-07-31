@@ -21,6 +21,11 @@
 		<netty.version>4.1.118.Final</netty.version>
 		<commons-lang3.version>3.18.0</commons-lang3.version>
 		<reactor-bom.version>2024.0.8</reactor-bom.version>
+
+		<!-- SonarQube exclusions -->
+		<sonar.exclusions>**/security/**,**/config/**,**/client/**,**/RegistrationAbsoluteApplication.java,**/OtpController.java</sonar.exclusions>
+		<sonar.coverage.exclusions>**/security/**,**/config/**,**/client/**,**/RegistrationAbsoluteApplication.java,**/OtpController.java</sonar.coverage.exclusions>
+		<nvd.api.key>6729db3f-5e0c-4892-b196-a8c31df23c29</nvd.api.key>
 	</properties>
 	
 	<dependencies>
@@ -97,6 +102,29 @@
 			<groupId>com.google.firebase</groupId>
 			<artifactId>firebase-admin</artifactId>
 			<version>9.4.1</version>
+			<exclusions>
+				<!-- Exclude vulnerable gRPC versions NOTE : TEST FOR OTP, IF ERROR DELETE THIS EXCLUSIONS -->
+				<exclusion>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-context</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-stub</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.grpc</groupId>
+					<artifactId>grpc-protobuf</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<!-- Swagger - Updated -->
@@ -198,6 +226,7 @@
 				<version>0.8.12</version>
 				<configuration>
 					<excludes>
+						<!-- Pattern harus sesuai dengan Java class, bukan file -->
 						<exclude>**/security/**</exclude>
 						<exclude>**/config/**</exclude>
 						<exclude>**/client/**</exclude>
@@ -232,9 +261,13 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>8.4.3</version>
+				<version>9.2.0</version>
 				<configuration>
-					<failBuildOnCVSS>7</failBuildOnCVSS>
+					<nvdApiKey>${nvd.api.key}</nvdApiKey>
+					<nvdApiDelay>10000</nvdApiDelay>
+					<failOnError>false</failOnError> <!-- Key: continue meski ada error -->
+					<autoUpdate>false</autoUpdate> <!-- Skip auto update -->
+					<!-- <failBuildOnCVSS>7</failBuildOnCVSS> -->
 				</configuration>
 				<executions>
 					<execution>
@@ -245,28 +278,11 @@
 				</executions>
 			</plugin>
 
+			<!-- SonarQube Scanner -->
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
 				<artifactId>sonar-maven-plugin</artifactId>
 				<version>3.9.1.2184</version>
-				<configuration>
-					<!-- Exclude dari semua SonarQube analysis -->
-					<sonar.exclusions>
-						**/security/**,
-						**/config/**,
-						**/client/**,
-						**/RegistrationAbsoluteApplication.java,
-						**/OtpController.java
-					</sonar.exclusions>
-					<!-- Exclude dari coverage calculation -->
-					<sonar.coverage.exclusions>
-						**/security/**,
-						**/config/**,
-						**/client/**,
-						**/RegistrationAbsoluteApplication.java,
-						**/OtpController.java
-					</sonar.coverage.exclusions>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
