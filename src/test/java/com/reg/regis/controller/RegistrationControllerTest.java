@@ -587,4 +587,174 @@ class RegistrationControllerTest {
         assertEquals("Jl. Kebon Jeruk No. 5", wali.get("alamatWali"));
         assertEquals("081987654321", wali.get("nomorTeleponWali"));
     }
+
+    @Test
+    void testRegisterCustomer_RuntimeExceptionSystemError() {
+        // Given - Mock RuntimeException dengan message khusus untuk trigger system error
+        when(registrationService.registerCustomer(any(RegistrationRequest.class)))
+            .thenThrow(new RuntimeException("Terjadi kesalahan sistem: Database connection timeout"));
+
+        // When
+        ResponseEntity<?> result = registrationController.registerCustomer(registrationRequest, response);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertTrue(((String) body.get("error")).contains("Database connection timeout"));
+        assertEquals("validation_error", body.get("type")); // RuntimeException masuk ke validation_error
+    }
+
+    @Test
+    void testRegisterCustomer_SuccessWithCookieSet() {
+        // Given
+        RegistrationResponse registrationResponse = new RegistrationResponse(
+            "Gold", "Jane Doe", "87654321", "PREMIUM", "4101 9876 5432 1098"
+        );
+        String token = "jwt-token-67890";
+
+        when(registrationService.registerCustomer(any(RegistrationRequest.class)))
+            .thenReturn(registrationResponse);
+        when(registrationService.authenticateCustomer(anyString(), anyString()))
+            .thenReturn(token);
+
+        // When
+        ResponseEntity<?> result = registrationController.registerCustomer(registrationRequest, response);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        
+        assertNotNull(body);
+        assertTrue((Boolean) body.get("success"));
+        assertEquals("Registrasi berhasil! Data Anda telah terverifikasi dengan KTP Dukcapil.", body.get("message"));
+        assertEquals(registrationResponse, body.get("data"));
+        
+        // Verify cookie di-set di response
+        assertNotNull(response.getCookies());
+        assertTrue(response.getCookies().length > 0);
+        
+        verify(registrationService).registerCustomer(any(RegistrationRequest.class));
+        verify(registrationService).authenticateCustomer(registrationRequest.getEmail(), registrationRequest.getPassword());
+    }
+
+    @Test
+    void testCheckPasswordStrength_WeakPassword() {
+        // Given - test untuk password lemah
+        when(registrationService.checkPasswordStrength("123"))
+            .thenReturn("lemah");
+
+        Map<String, String> request = Map.of("password", "123");
+        
+        // When
+        ResponseEntity<?> result = registrationController.checkPasswordStrength(request);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        
+        assertNotNull(body);
+        assertEquals("lemah", body.get("strength"));
+    }
+
+    @Test
+    void testCheckPasswordStrength_StrongPassword() {
+        // Given - test untuk password kuat
+        when(registrationService.checkPasswordStrength("StrongP@ssw0rd123!"))
+            .thenReturn("kuat");
+
+        Map<String, String> request = Map.of("password", "StrongP@ssw0rd123!");
+        
+        // When
+        ResponseEntity<?> result = registrationController.checkPasswordStrength(request);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        
+        assertNotNull(body);
+        assertEquals("kuat", body.get("strength"));
+    }
+
+    @Test
+    void testGetRegistrationStats_SuccessWithDifferentStats() {
+        // Given - test dengan stats yang berbeda
+        RegistrationService.RegistrationStats stats = new RegistrationService.RegistrationStats(
+            250L, 200L, 80.0, false, "http://localhost:8082"
+        );
+        when(registrationService.getRegistrationStats()).thenReturn(stats);
+
+        // When
+        ResponseEntity<?> result = registrationController.getRegistrationStats();
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(stats, result.getBody());
+        
+        verify(registrationService).getRegistrationStats();
+    }
+
+    @Test
+    void testRegisterCustomer_GeneralExceptionFromService() {
+        // Given - Mock service method yang throw checked exception atau other exception
+        // Kita bisa mock IOException atau exception lain yang bisa terjadi di service layer
+        when(registrationService.registerCustomer(any(RegistrationRequest.class)))
+            .thenAnswer(invocation -> {
+                // Simulate service method yang internally catch IOException dan re-throw sebagai Exception
+                throw new Exception("Database connection failed");
+            });
+
+        // When
+        ResponseEntity<?> result = registrationController.registerCustomer(registrationRequest, response);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertTrue(((String) body.get("error")).contains("Database connection failed"));
+        assertEquals("system_error", body.get("type"));
+    }
+
+    @Test 
+    void testRegisterCustomer_AuthenticateCustomerException() {
+        // Given - registrasi berhasil tapi authenticate gagal
+        RegistrationResponse registrationResponse = new RegistrationResponse(
+            "Silver", "John Doe", "12345678", "PERSONAL", "4101 2345 6789 0123"
+        );
+
+        when(registrationService.registerCustomer(any(RegistrationRequest.class)))
+            .thenReturn(registrationResponse);
+        when(registrationService.authenticateCustomer(anyString(), anyString()))
+            .thenAnswer(invocation -> {
+                throw new Exception("Authentication service unavailable");
+            });
+
+        // When
+        ResponseEntity<?> result = registrationController.registerCustomer(registrationRequest, response);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) result.getBody();
+        
+        assertNotNull(body);
+        assertFalse((Boolean) body.get("success"));
+        assertTrue(((String) body.get("error")).contains("Authentication service unavailable"));
+        assertEquals("system_error", body.get("type"));
+    }
 }

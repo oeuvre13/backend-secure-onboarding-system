@@ -299,4 +299,70 @@ public class RegistrationRequestTest {
         assertEquals("Jl. Merdeka 10", wali.getAlamatWali());
         assertEquals("081234567890", wali.getNomorTeleponWali());
     }
+
+    // ======================= nomorKartuDebitVirtual =======================
+    @Test
+    void testGetNomorKartuDebitVirtual_defaultValue_shouldReturnNull() {
+        RegistrationRequest request = new RegistrationRequest();
+        assertNull(request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_withValidValue_shouldSetCorrectly() {
+        RegistrationRequest request = new RegistrationRequest();
+        String nomorKartu = "1234567890123456";
+        request.setNomorKartuDebitVirtual(nomorKartu);
+        assertEquals(nomorKartu, request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_withNull_shouldSetNull() {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setNomorKartuDebitVirtual(null);
+        assertNull(request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_withEmptyString_shouldSetEmptyString() {
+        RegistrationRequest request = new RegistrationRequest();
+        request.setNomorKartuDebitVirtual("");
+        assertEquals("", request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_withWhitespace_shouldSetWhitespace() {
+        RegistrationRequest request = new RegistrationRequest();
+        String whitespaceValue = "   ";
+        request.setNomorKartuDebitVirtual(whitespaceValue);
+        assertEquals(whitespaceValue, request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_withSpecialCharacters_shouldSetCorrectly() {
+        RegistrationRequest request = new RegistrationRequest();
+        String specialValue = "1234-5678-9012-3456";
+        request.setNomorKartuDebitVirtual(specialValue);
+        assertEquals(specialValue, request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_overwritePreviousValue_shouldUpdateCorrectly() {
+        RegistrationRequest request = new RegistrationRequest();
+        String firstValue = "1111111111111111";
+        String secondValue = "2222222222222222";
+        
+        request.setNomorKartuDebitVirtual(firstValue);
+        assertEquals(firstValue, request.getNomorKartuDebitVirtual());
+        
+        request.setNomorKartuDebitVirtual(secondValue);
+        assertEquals(secondValue, request.getNomorKartuDebitVirtual());
+    }
+
+    @Test
+    void testSetNomorKartuDebitVirtual_withLongString_shouldSetCorrectly() {
+        RegistrationRequest request = new RegistrationRequest();
+        String longValue = "12345678901234567890123456789012345678901234567890";
+        request.setNomorKartuDebitVirtual(longValue);
+        assertEquals(longValue, request.getNomorKartuDebitVirtual());
+    }
 }
