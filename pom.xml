@@ -266,7 +266,6 @@
 					<nvdApiDelay>10000</nvdApiDelay>
 					<failOnError>false</failOnError> <!-- Key: continue meski ada error -->
 					<autoUpdate>false</autoUpdate> <!-- Skip auto update -->
-					<!-- <failBuildOnCVSS>7</failBuildOnCVSS> -->
 				</configuration>
 				<executions>
 					<execution>
